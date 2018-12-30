@@ -1,5 +1,7 @@
 Rust library to convert a file path from/to slash path
 ======================================================
+[![crates.io][crates-io-badge]][crates-io]
+[![documentation][doc-badge]][doc]
 [![CI on Linux and macOS][travis-ci-badge]][travis-ci]
 [![CI on Windows][appveyor-badge]][appveyor]
 
@@ -63,7 +65,9 @@ path-slash = "0.x"
 
 [the MIT License](LICENSE.txt)
 
+[doc-badge]: https://docs.rs/path-slash/badge.svg
 [doc]: https://docs.rs/path-slash
+[crates-io-badge]: https://img.shields.io/crates/v/path-slash.svg
 [crates-io]: https://crates.io/crates/path-slash
 [appveyor-badge]: https://ci.appveyor.com/api/projects/status/44t8q0viea89fm2e/branch/master?svg=true
 [appveyor]: https://ci.appveyor.com/project/rhysd/path-slash/branch/master
