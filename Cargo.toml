@@ -1,0 +1,7 @@
+[package]
+name = "path-slash"
+version = "0.0.1"
+authors = ["rhysd <https://rhysd.github.io>"]
+edition = "2018"
+
+[dependencies]
