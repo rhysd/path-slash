@@ -3,6 +3,18 @@ name = "path-slash"
 version = "0.0.1"
 authors = ["rhysd <https://rhysd.github.io>"]
 edition = "2018"
+description = "Conversion to/from a file path from/to slash path"
+repository = "https://github.com/rhysd/path-slash"
+readme = "README.md"
+license-file = "LICENSE.txt"
+
+[badges]
+travis-ci = { repository = "rhysd/path-slash" }
+appveyor = { repository = "rhysd/path-slash" }
+maintenance = { status = "actively-developed" }
+
+[package.metadata.release]
+no-dev-version = true
 
 [dependencies]
 
