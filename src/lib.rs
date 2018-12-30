@@ -2,8 +2,8 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 pub trait PathExt {
-    fn to_slash_lossy(&self) -> String;
     fn to_slash(&self) -> Option<String>;
+    fn to_slash_lossy(&self) -> String;
 }
 
 impl PathExt for Path {
@@ -63,15 +63,15 @@ impl PathExt for Path {
                 path::Component::Normal(ref s) => s.to_str(),
             })
             .collect::<Option<Vec<_>>>();
-        components.map(|v| v.into_iter().join('/'))
+        components.map(|v| v.join("/"))
     }
 }
 
 pub trait PathBufExt {
     fn from_slash<S: AsRef<str>>(s: S) -> Self;
     fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
-    fn to_slash_lossy(&self) -> String;
     fn to_slash(&self) -> Option<String>;
+    fn to_slash_lossy(&self) -> String;
 }
 
 impl PathBufExt for PathBuf {
@@ -113,6 +113,10 @@ impl PathBufExt for PathBuf {
         self.as_path().to_slash()
     }
 }
+
+#[cfg(test)]
+#[macro_use]
+extern crate lazy_static;
 
 #[cfg(test)]
 mod test;

@@ -5,3 +5,6 @@ authors = ["rhysd <https://rhysd.github.io>"]
 edition = "2018"
 
 [dependencies]
+
+[dev-dependencies]
+lazy_static = "1.2.0"
