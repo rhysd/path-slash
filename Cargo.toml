@@ -1,6 +1,6 @@
 [package]
 name = "path-slash"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["rhysd <https://rhysd.github.io>"]
 edition = "2018"
 description = "Conversion to/from a file path from/to slash path"
