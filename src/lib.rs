@@ -16,14 +16,8 @@ impl PathExt for Path {
     fn to_slash_lossy(&self) -> String {
         use std::path;
 
-        let mut first = true;
         let mut buf = String::new();
         for c in self.components() {
-            if first {
-                first = false;
-            } else {
-                buf.push('/');
-            }
             match c {
                 path::Component::RootDir => { /* empty */ }
                 path::Component::CurDir => buf.push('.'),
@@ -42,6 +36,11 @@ impl PathExt for Path {
             }
             buf.push('/');
         }
+
+        if buf != "/" {
+            buf.pop(); // Pop last '/'
+        }
+
         buf
     }
 
@@ -63,7 +62,15 @@ impl PathExt for Path {
                 path::Component::Normal(ref s) => s.to_str(),
             })
             .collect::<Option<Vec<_>>>();
-        components.map(|v| v.join("/"))
+
+        components.map(|v| {
+            if v.len() == 1 && v[0].is_empty() {
+                // Special case for '/'
+                "/".to_string()
+            } else {
+                v.join("/")
+            }
+        })
     }
 }
 

@@ -24,14 +24,19 @@ lazy_static! {
         .into_iter()
         .map(|item| {
             let (input, expected) = item;
-            let s = expected
-                .chars()
-                .map(|c| match c {
-                    '/' => path::MAIN_SEPARATOR,
-                    _ => c,
-                })
-                .collect::<String>();
-            (input.to_string(), PathBuf::from(s))
+            let expected = if cfg!(target_os = "windows") {
+                let s = expected
+                    .chars()
+                    .map(|c| match c {
+                        '/' => path::MAIN_SEPARATOR,
+                        _ => c,
+                    })
+                    .collect::<String>();
+                PathBuf::from(s)
+            } else {
+                PathBuf::from(expected)
+            };
+            (input.to_string(), expected)
         })
         .collect::<Vec<_>>()
     };
@@ -63,23 +68,25 @@ lazy_static! {
             "/foo",
             "./foo",
             "../foo",
-            "foo/.",
             "foo/..",
             "foo/bar",
-            "foo/bar",
             "foo/../bar",
-            "foo/./bar",
         ]
         .into_iter()
-        .map(|item| {
-            let s = item
-                .chars()
-                .map(|c| match c {
-                    '/' => path::MAIN_SEPARATOR,
-                    _ => c,
-                })
-                .collect::<String>();
-            (PathBuf::from(s), item.to_string())
+        .map(|expected| {
+            let input = if cfg!(target_os = "windows") {
+                let s = expected
+                    .chars()
+                    .map(|c| match c {
+                        '/' => path::MAIN_SEPARATOR,
+                        _ => c,
+                    })
+                    .collect::<String>();
+                PathBuf::from(s)
+            } else {
+                PathBuf::from(expected)
+            };
+            (input, expected.to_string())
         })
         .collect::<Vec<_>>()
     };
