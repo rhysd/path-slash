@@ -121,6 +121,13 @@ fn to_slash_lossy_pathbuf() {
 }
 
 #[test]
+fn from_slash_to_slash() {
+    for (_, path) in TO_SLASH_TESTS.iter() {
+        assert_eq!(PathBuf::from_slash(path).to_slash(), Some(path.clone()));
+    }
+}
+
+#[test]
 #[cfg(target_os = "windows")]
 fn with_driver_letter() {
     let path = PathBuf::from_slash("C://foo/bar");
