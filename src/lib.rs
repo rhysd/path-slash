@@ -22,8 +22,14 @@
 //!
 //! #[cfg(target_os = "windows")]
 //! {
-//!     assert_eq!(Path::new(r"foo\bar\piyo.txt").to_slash(), Some("foo/bar/piyo.txt".to_string()));
-//!     assert_eq!(Path::new(r"C:\\foo\bar\piyo.txt").to_slash(), Some("C://foo/bar/piyo.txt".to_string()));
+//!     assert_eq!(
+//!         Path::new(r"foo\bar\piyo.txt").to_slash(),
+//!         Some("foo/bar/piyo.txt".to_string()),
+//!     );
+//!     assert_eq!(
+//!         Path::new(r"C:\\foo\bar\piyo.txt").to_slash(),
+//!         Some("C://foo/bar/piyo.txt".to_string()),
+//!     );
 //!
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
 //!     assert_eq!(p, PathBuf::from(r"foo\bar\piyo.txt"));
@@ -32,8 +38,14 @@
 //!
 //! #[cfg(not(target_os = "windows"))]
 //! {
-//!     assert_eq!(Path::new("foo/bar/piyo.txt").to_slash(), Some("foo/bar/piyo.txt".to_string()));
-//!     assert_eq!(Path::new("/foo/bar/piyo.txt").to_slash(), Some("/foo/bar/piyo.txt".to_string()));
+//!     assert_eq!(
+//!         Path::new("foo/bar/piyo.txt").to_slash(),
+//!         Some("foo/bar/piyo.txt".to_string()),
+//!     );
+//!     assert_eq!(
+//!         Path::new("/foo/bar/piyo.txt").to_slash(),
+//!         Some("/foo/bar/piyo.txt".to_string()),
+//!     );
 //!
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
 //!     assert_eq!(p, PathBuf::from(r"foo/bar/piyo.txt"));

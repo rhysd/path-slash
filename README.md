@@ -35,8 +35,14 @@ fn example_path_ext() {
     use path_slash::PathExt;
 
     // On Windows
-    assert_eq!(Path::new(r"foo\bar\piyo.txt").to_slash(), Some("foo/bar/piyo.txt".to_string()));
-    assert_eq!(Path::new(r"C:\\foo\bar\piyo.txt").to_slash(), Some("C://foo/bar/piyo.txt".to_string()));
+    assert_eq!(
+        Path::new(r"foo\bar\piyo.txt").to_slash(),
+        Some("foo/bar/piyo.txt".to_string()),
+    );
+    assert_eq!(
+        Path::new(r"C:\\foo\bar\piyo.txt").to_slash(),
+        Some("C://foo/bar/piyo.txt".to_string()),
+    );
 }
 
 fn example_pathbuf_ext() {
