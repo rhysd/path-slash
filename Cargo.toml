@@ -7,6 +7,7 @@ description = "Conversion to/from a file path from/to slash path"
 repository = "https://github.com/rhysd/path-slash"
 readme = "README.md"
 license-file = "LICENSE.txt"
+categories = ["filesystem"]
 
 [badges]
 travis-ci = { repository = "rhysd/path-slash" }
