@@ -7,7 +7,6 @@ description = "Conversion to/from a file path from/to slash path"
 repository = "https://github.com/rhysd/path-slash"
 readme = "README.md"
 license = "MIT"
-license-file = "LICENSE.txt"
 categories = ["filesystem"]
 
 [badges]
