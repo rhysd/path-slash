@@ -21,7 +21,7 @@ lazy_static! {
             ("foo/../bar", "foo/../bar"),
             ("foo/./bar", "foo/./bar"),
         ]
-        .into_iter()
+        .iter()
         .map(|item| {
             let (input, expected) = item;
             let expected = if cfg!(target_os = "windows") {
@@ -72,7 +72,7 @@ lazy_static! {
             "foo/bar",
             "foo/../bar",
         ]
-        .into_iter()
+        .iter()
         .map(|expected| {
             let input = if cfg!(target_os = "windows") {
                 let s = expected
