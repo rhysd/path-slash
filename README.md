@@ -6,7 +6,7 @@ Rust library to convert a file path from/to slash path
 [![CI on Windows][appveyor-badge]][appveyor]
 
 [`path-slash`][crates-io] is a tiny library to convert a file path (e.g. `foo/bar`, `foo\bar` or
-`C:\\foo\bar`) from/to slash path (e.g. `foo/bar`, `C://foo/bar`).
+`C:\foo\bar`) from/to slash path (e.g. `foo/bar`, `C:/foo/bar`).
 
 In Unix-like OS, path separator is slash `/` by default. So any conversion is not necessary. But on
 Windows, file path separator `\` needs to be replaced with slash `/` (and of course `\` for escaping
@@ -40,8 +40,8 @@ fn example_path_ext() {
         Some("foo/bar/piyo.txt".to_string()),
     );
     assert_eq!(
-        Path::new(r"C:\\foo\bar\piyo.txt").to_slash(),
-        Some("C://foo/bar/piyo.txt".to_string()),
+        Path::new(r"C:\foo\bar\piyo.txt").to_slash(),
+        Some("C:/foo/bar/piyo.txt".to_string()),
     );
 }
 

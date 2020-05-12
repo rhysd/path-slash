@@ -27,8 +27,8 @@
 //!         Some("foo/bar/piyo.txt".to_string()),
 //!     );
 //!     assert_eq!(
-//!         Path::new(r"C:\\foo\bar\piyo.txt").to_slash(),
-//!         Some("C://foo/bar/piyo.txt".to_string()),
+//!         Path::new(r"C:\foo\bar\piyo.txt").to_slash(),
+//!         Some("C:/foo/bar/piyo.txt".to_string()),
 //!     );
 //!
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
