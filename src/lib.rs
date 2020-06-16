@@ -52,6 +52,9 @@
 //!     assert_eq!(p.to_slash(), Some("foo/bar/piyo.txt".to_string()));
 //! }
 //! ```
+#![forbid(unsafe_code)]
+#![warn(clippy::dbg_macro, clippy::print_stdout)]
+
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
