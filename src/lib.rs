@@ -130,6 +130,8 @@ impl PathExt for Path {
                         Some(ref s) => buf.push_str(s),
                         None => buf.push_str(&s.to_string_lossy()),
                     }
+                    // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
+                    continue;
                 }
                 path::Component::Normal(ref s) => match s.to_str() {
                     Some(ref s) => buf.push_str(s),
@@ -192,25 +194,38 @@ impl PathExt for Path {
     #[cfg(target_os = "windows")]
     fn to_slash(&self) -> Option<String> {
         use std::path;
-        let components = self
-            .components()
-            .map(|c| match c {
-                path::Component::RootDir => Some(""),
-                path::Component::CurDir => Some("."),
-                path::Component::ParentDir => Some(".."),
-                path::Component::Prefix(ref p) => p.as_os_str().to_str(),
-                path::Component::Normal(ref s) => s.to_str(),
-            })
-            .collect::<Option<Vec<_>>>();
 
-        components.map(|v| {
-            if v.len() == 1 && v[0].is_empty() {
-                // Special case for '/'
-                "/".to_string()
-            } else {
-                v.join("/")
+        let mut buf = String::new();
+        for c in self.components() {
+            match c {
+                path::Component::RootDir => { /* empty */ }
+                path::Component::CurDir => buf.push('.'),
+                path::Component::ParentDir => buf.push_str(".."),
+                path::Component::Prefix(ref prefix) => {
+                    if let Some(s) = prefix.as_os_str().to_str() {
+                        buf.push_str(s);
+                        // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
+                        continue;
+                    } else {
+                        return None;
+                    }
+                }
+                path::Component::Normal(ref s) => {
+                    if let Some(s) = s.to_str() {
+                        buf.push_str(s);
+                    } else {
+                        return None;
+                    }
+                }
             }
-        })
+            buf.push('/');
+        }
+
+        if buf != "/" {
+            buf.pop(); // Pop last '/'
+        }
+
+        Some(buf)
     }
 }
 
