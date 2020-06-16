@@ -129,9 +129,18 @@ fn from_slash_to_slash() {
 
 #[test]
 #[cfg(target_os = "windows")]
-fn with_driver_letter() {
+fn with_driver_letter_to_slash() {
     let path = PathBuf::from_slash("C:/foo/bar");
     assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
     let slash = path.to_slash();
     assert_eq!(slash, Some("C:/foo/bar".to_string()));
+}
+
+#[test]
+#[cfg(target_os = "windows")]
+fn with_driver_letter_to_slash_lossy() {
+    let path = PathBuf::from_slash("C:/foo/bar");
+    assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
+    let slash = path.to_slash_lossy();
+    assert_eq!(slash, "C:/foo/bar".to_string());
 }
