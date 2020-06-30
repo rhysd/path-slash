@@ -1,14 +1,15 @@
-//! A library for converting file paths from/to slash paths
+//! A library for converting file paths to and from "slash paths."
 //!
-//! A slash path is a path whose components are separated by separator '/' always.
+//! A "slash path" is a path whose components are always separated by `/` and never `\`.
 //!
-//! In Unix-like OS, path separator is slash '/' by default. So any conversion is not necessary.
-//! But on Windows, file path separator '\' needs to be replaced with slash '/' (and of course '\'
-//! for escaping character should not be replaced).
+//! In Unix-like Oes, the path separator is `/` by default. So any conversion is not necessary.
+//! But on Windows, the file path separator is `\`, and needs to be replaced with `/`. Of course, `\`s used
+//! for escaping characters should not be replaced.
 //!
-//! For example, a file path 'foo\bar\piyo.txt' can be converted to/from a slash path 'foo/bar/piyo.txt'
+//! For example, a file path `foo\bar\piyo.txt` can be converted to/from a slash path `foo/bar/piyo.txt`.
 //!
 //! This package was inspired by Go's `path/filepath.FromSlash` and `path/filepath.ToSlash`.
+//!
 //! - https://golang.org/pkg/path/filepath/#FromSlash
 //! - https://golang.org/pkg/path/filepath/#ToSlash
 //!
