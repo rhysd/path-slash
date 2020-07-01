@@ -10,8 +10,6 @@ license = "MIT"
 categories = ["filesystem"]
 
 [badges]
-travis-ci = { repository = "rhysd/path-slash" }
-appveyor = { repository = "rhysd/path-slash" }
 maintenance = { status = "passively-maintained" }
 
 [package.metadata.release]

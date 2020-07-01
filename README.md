@@ -2,8 +2,7 @@ Rust library to convert a file path from/to slash path
 ======================================================
 [![crates.io][crates-io-badge]][crates-io]
 [![documentation][doc-badge]][doc]
-[![CI on Linux and macOS][travis-ci-badge]][travis-ci]
-[![CI on Windows][appveyor-badge]][appveyor]
+[![CI][ci-badge]][ci]
 
 [`path-slash`][crates-io] is a tiny library to convert a file path (e.g. `foo/bar`, `foo\bar` or
 `C:\foo\bar`) from/to slash path (e.g. `foo/bar`, `C:/foo/bar`).
@@ -75,7 +74,5 @@ path-slash = "0.x"
 [doc]: https://docs.rs/path-slash
 [crates-io-badge]: https://img.shields.io/crates/v/path-slash.svg
 [crates-io]: https://crates.io/crates/path-slash
-[appveyor-badge]: https://ci.appveyor.com/api/projects/status/44t8q0viea89fm2e/branch/master?svg=true
-[appveyor]: https://ci.appveyor.com/project/rhysd/path-slash/branch/master
-[travis-ci-badge]: https://travis-ci.org/rhysd/path-slash.svg?branch=master
-[travis-ci]: https://travis-ci.org/rhysd/path-slash
+[ci]: https://github.com/rhysd/path-slash/actions?query=workflow%3ACI
+[ci-badge]: https://github.com/rhysd/path-slash/workflows/CI/badge.svg?branch=master&event=push
