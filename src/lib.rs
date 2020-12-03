@@ -2,7 +2,7 @@
 //!
 //! A "slash path" is a path whose components are always separated by `/` and never `\`.
 //!
-//! In Unix-like Oes, the path separator is `/` by default. So any conversion is not necessary.
+//! On Unix-like OSes, the path separator is `/`. So any conversion is not necessary.
 //! But on Windows, the file path separator is `\`, and needs to be replaced with `/`. Of course, `\`s used
 //! for escaping characters should not be replaced.
 //!
