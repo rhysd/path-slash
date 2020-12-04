@@ -8,10 +8,8 @@
 //!
 //! For example, a file path `foo\bar\piyo.txt` can be converted to/from a slash path `foo/bar/piyo.txt`.
 //!
-//! This package was inspired by Go's `path/filepath.FromSlash` and `path/filepath.ToSlash`.
-//!
-//! - https://golang.org/pkg/path/filepath/#FromSlash
-//! - https://golang.org/pkg/path/filepath/#ToSlash
+//! This package was inspired by Go's [`path/filepath.FromSlash`](https://golang.org/pkg/path/filepath/#FromSlash)
+//! and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
 //!
 //! ```rust
 //! use std::path::{Path, PathBuf};
@@ -59,7 +57,7 @@
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-/// Trait to extend std::path::Path.
+/// Trait to extend [`std::path::Path`].
 ///
 /// ```
 /// use path_slash::PathExt;
@@ -157,7 +155,7 @@ impl PathExt for Path {
     /// Any file path separators in the file path is replaced with '/'.
     /// When the path contains non-Unicode sequence, this method returns None.
     ///
-    /// On non-Windows OS, it is equivalent to `.to_str().map(std::to_string())`
+    /// On non-Windows OS, it is equivalent to `.to_str().map(str::to_string)`
     ///
     /// ```
     /// use std::path::Path;
@@ -181,7 +179,7 @@ impl PathExt for Path {
     /// Any file path separators in the file path is replaced with '/'.
     /// When the path contains non-Unicode sequence, this method returns None.
     ///
-    /// On non-Windows OS, it is equivalent to `.to_str().map(std::to_string())`
+    /// On non-Windows OS, it is equivalent to `.to_str().map(str::to_string)`
     ///
     /// ```
     /// use std::path::Path;
@@ -233,7 +231,7 @@ impl PathExt for Path {
     }
 }
 
-/// Trait to extend std::path::PathBuf.
+/// Trait to extend [`std::path::PathBuf`].
 ///
 /// ```
 /// use path_slash::PathBufExt;
@@ -251,13 +249,13 @@ pub trait PathBufExt {
 }
 
 impl PathBufExt for PathBuf {
-    /// Convert the slash path (path separated with '/') to std::path::PathBuf.
+    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
     /// The replacements only happen on Windows since the file path separators on other OSes are the
     /// same as '/'.
     ///
-    /// On non-Windows OS, it is simply equivalent to std::path::PathBuf::from().
+    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
     ///
     /// ```
     /// use std::path::PathBuf;
@@ -276,13 +274,13 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s.as_ref())
     }
 
-    /// Convert the slash path (path separated with '/') to std::path::PathBuf.
+    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
     /// The replacements only happen on Windows since the file path separators on other OSes are the
     /// same as '/'.
     ///
-    /// On non-Windows OS, it is simply equivalent to std::path::PathBuf::from().
+    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
     ///
     /// ```
     /// use std::path::PathBuf;
@@ -311,14 +309,14 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s)
     }
 
-    /// Convert the slash path (path separated with '/') to std::path::PathBuf.
+    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
     /// The replacements only happen on Windows since the file path separators on other OSes are the
     /// same as '/'.
     ///
     /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
-    /// On non-Windows OS, it is simply equivalent to std::path::PathBuf::from() and there is no
+    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`] and there is no
     /// loss while conversion.
     ///
     /// ```
@@ -340,14 +338,14 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s.as_ref())
     }
 
-    /// Convert the slash path (path separated with '/') to std::path::PathBuf.
+    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
     /// The replacements only happen on Windows since the file path separators on other OSes are the
     /// same as '/'.
     ///
     /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
-    /// On non-Windows OS, it is simply equivalent to std::path::PathBuf::from() and there is no
+    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`] and there is no
     /// loss while conversion.
     ///
     /// ```
