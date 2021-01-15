@@ -121,6 +121,7 @@ impl PathExt for Path {
         use std::path;
 
         let mut buf = String::new();
+        let mut has_trailing_slash = false;
         for c in self.components() {
             match c {
                 path::Component::RootDir => { /* empty */ }
@@ -141,9 +142,10 @@ impl PathExt for Path {
                 },
             }
             buf.push('/');
+            has_trailing_slash = true;
         }
 
-        if buf != "/" {
+        if buf != "/" && has_trailing_slash {
             buf.pop(); // Pop last '/'
         }
 
@@ -198,6 +200,7 @@ impl PathExt for Path {
         use std::path;
 
         let mut buf = String::new();
+        let mut has_trailing_slash = false;
         for c in self.components() {
             match c {
                 path::Component::RootDir => { /* empty */ }
@@ -221,9 +224,10 @@ impl PathExt for Path {
                 }
             }
             buf.push('/');
+            has_trailing_slash = true;
         }
 
-        if buf != "/" {
+        if buf != "/" && has_trailing_slash {
             buf.pop(); // Pop last '/'
         }
 

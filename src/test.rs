@@ -127,20 +127,120 @@ fn from_slash_to_slash() {
     }
 }
 
-#[test]
 #[cfg(target_os = "windows")]
-fn with_driver_letter_to_slash() {
-    let path = PathBuf::from_slash("C:/foo/bar");
-    assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
-    let slash = path.to_slash();
-    assert_eq!(slash, Some("C:/foo/bar".to_string()));
-}
+mod windows {
+    use super::*;
+    use std::path::PathBuf;
 
-#[test]
-#[cfg(target_os = "windows")]
-fn with_driver_letter_to_slash_lossy() {
-    let path = PathBuf::from_slash("C:/foo/bar");
-    assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
-    let slash = path.to_slash_lossy();
-    assert_eq!(slash, "C:/foo/bar".to_string());
+    #[test]
+    fn with_driver_letter_to_slash() {
+        let path = PathBuf::from_slash("C:/foo/bar");
+        assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
+        let slash = path.to_slash();
+        assert_eq!(slash, Some("C:/foo/bar".to_string()));
+    }
+
+    #[test]
+    fn with_drive_letter_to_slash_lossy() {
+        let path = PathBuf::from_slash("C:/foo/bar");
+        assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, "C:/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_drive_letter_but_no_path_to_slash() {
+        let path = PathBuf::from_slash("C:");
+        assert_eq!(path, PathBuf::from(r"C:"));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, "C:".to_string());
+    }
+
+    #[test]
+    fn with_drive_letter_but_no_path_to_slash_lossy() {
+        let path = PathBuf::from_slash("C:");
+        assert_eq!(path, PathBuf::from(r"C:"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, "C:".to_string());
+    }
+
+    #[test]
+    fn with_verbatim_drive_letter_to_slash() {
+        let path = PathBuf::from_slash(r"\\?\C:/foo/bar");
+        assert_eq!(path, PathBuf::from(r"\\?\C:\foo\bar"));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, r"\\?\C:/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_verbatim_drive_letter_to_slash_lossy() {
+        let path = PathBuf::from_slash(r"\\?\C:/foo/bar");
+        assert_eq!(path, PathBuf::from(r"\\?\C:\foo\bar"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, r"\\?\C:/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_unc_prefix_to_slash() {
+        let path = PathBuf::from_slash(r"\\server\share/foo/bar");
+        assert_eq!(path, PathBuf::from(r"\\server\share\foo\bar"));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, r"\\server\share/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_unc_prefix_to_slash_lossy() {
+        let path = PathBuf::from_slash(r"\\server\share/foo/bar");
+        assert_eq!(path, PathBuf::from(r"\\server\share\foo\bar"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, r"\\server\share/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_unc_prefix_but_no_path_to_slash() {
+        let path = PathBuf::from_slash(r"\\server\share");
+        assert_eq!(path, PathBuf::from(r"\\server\share"));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, r"\\server\share".to_string());
+    }
+
+    #[test]
+    fn with_unc_prefix_but_no_path_to_slash_lossy() {
+        let path = PathBuf::from_slash(r"\\server\share");
+        assert_eq!(path, PathBuf::from(r"\\server\share"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, r"\\server\share".to_string());
+    }
+
+    #[test]
+    fn with_verbatim_unc_prefix_to_slash() {
+        let path = PathBuf::from_slash(r"\\?\UNC\server\share/foo/bar");
+        assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share\foo\bar"));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, r"\\?\UNC\server\share/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_verbatim_unc_prefix_to_slash_lossy() {
+        let path = PathBuf::from_slash(r"\\?\UNC\server\share/foo/bar");
+        assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share\foo\bar"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, r"\\?\UNC\server\share/foo/bar".to_string());
+    }
+
+    #[test]
+    fn with_verbatim_unc_prefix_but_no_path_to_slash() {
+        let path = PathBuf::from_slash(r"\\?\UNC\server\share");
+        assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share"));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, r"\\?\UNC\server\share".to_string());
+    }
+
+    #[test]
+    fn with_verbatim_unc_prefix_but_no_path_to_slash_lossy() {
+        let path = PathBuf::from_slash(r"\\?\UNC\server\share");
+        assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share"));
+        let slash = path.to_slash_lossy();
+        assert_eq!(slash, r"\\?\UNC\server\share".to_string());
+    }
 }
