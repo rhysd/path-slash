@@ -18,4 +18,4 @@ no-dev-version = true
 [dependencies]
 
 [dev-dependencies]
-lazy_static = "1.2.0"
+lazy_static = "1"
