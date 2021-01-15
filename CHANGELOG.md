@@ -1,3 +1,11 @@
+<a name="v0.1.4"></a>
+# [v0.1.4](https://github.com/rhysd/path-slash/releases/tag/v0.1.4) - 15 Jan 2021
+
+- Fix a final letter of paths with some verbatim prefixes was removed (#5)
+
+[Changes][v0.1.4]
+
+
 <a name="v0.1.3"></a>
 # [v0.1.3](https://github.com/rhysd/path-slash/releases/tag/v0.1.3) - 01 Jul 2020
 
@@ -15,6 +23,7 @@
 [Changes][v0.1.2]
 
 
+[v0.1.4]: https://github.com/rhysd/path-slash/compare/v0.1.3...v0.1.4
 [v0.1.3]: https://github.com/rhysd/path-slash/compare/v0.1.2...v0.1.3
 [v0.1.2]: https://github.com/rhysd/path-slash/tree/v0.1.2
 
