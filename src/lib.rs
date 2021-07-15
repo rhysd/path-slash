@@ -248,6 +248,8 @@ impl PathExt for Path {
 pub trait PathBufExt {
     fn from_slash<S: AsRef<str>>(s: S) -> Self;
     fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
+    fn from_backslash<S: AsRef<str>>(s: S) -> Self;
+    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
     fn to_slash(&self) -> Option<String>;
     fn to_slash_lossy(&self) -> String;
 }
