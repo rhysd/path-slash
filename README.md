@@ -7,7 +7,7 @@ Rust library to convert a file path from/to slash path
 [`path-slash`][crates-io] is a tiny library to convert a file path (e.g. `foo/bar`, `foo\bar` or
 `C:\foo\bar`) from/to slash path (e.g. `foo/bar`, `C:/foo/bar`).
 
-On Unix-like OS, path separator is slash `/` by default. So any conversion is not necessary. But on
+On Unix-like OS, path separator is slash `/` by default. One may want to convert a Windows path. But on
 Windows, file path separator `\` needs to be replaced with slash `/` (and of course `\`s for escaping
 characters should not be replaced).
 
@@ -25,6 +25,8 @@ and `std::path::PathBuf` gains some methods and associated functions
 - `PathBufExt`
   - `PathBuf::from_slash<S: AsRef<str>>(s: S) -> PathBuf`
   - `PathBuf::from_slash_lossy<S: AsRef<OsStr>>(s: S) -> PathBuf`
+  - `PathBuf::from_backslash<S: AsRef<str>>(s: S) -> PathBuf`
+  - `PathBuf::from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> PathBuf`
   - `PathBuf::to_slash(&self) -> Option<String>`
   - `PathBuf::to_slash_lossy(&self) -> String`
 
