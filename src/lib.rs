@@ -325,7 +325,7 @@ impl PathBufExt for PathBuf {
             .as_ref()
             .chars()
             .map(|c| match c {
-                '\' => path::MAIN_SEPARATOR,
+                '\\' => path::MAIN_SEPARATOR,
                 c => c,
             })
             .collect::<String>();
