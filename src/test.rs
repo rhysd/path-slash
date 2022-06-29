@@ -1,6 +1,8 @@
-use super::*;
+use super::{PathBufExt as _, PathExt as _};
+use lazy_static::lazy_static;
 use std::ffi::OsStr;
 use std::path;
+use std::path::PathBuf;
 
 lazy_static! {
     static ref FROM_SLASH_TESTS: Vec<(String, PathBuf)> = {
@@ -147,7 +149,6 @@ fn from_slash_to_slash() {
 #[cfg(target_os = "windows")]
 mod windows {
     use super::*;
-    use std::path::PathBuf;
 
     #[test]
     fn with_driver_letter_to_slash() {

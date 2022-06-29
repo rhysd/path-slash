@@ -33,7 +33,7 @@ and `std::path::PathBuf` gains some methods and associated functions
 ```rust
 fn example_path_ext() {
     // Trait for extending std::path::Path
-    use path_slash::PathExt;
+    use path_slash::PathExt as _;
 
     // On Windows
     assert_eq!(
@@ -48,7 +48,7 @@ fn example_path_ext() {
 
 fn example_pathbuf_ext() {
     // Trait for extending std::path::PathBuf
-    use path_slash::PathBufExt;
+    use path_slash::PathBufExt as _;
 
     // On Windows
     let p = PathBuf::from_slash("foo/bar/piyo.txt");
