@@ -57,6 +57,23 @@ fn from_slash_lossy() {
     }
 }
 
+#[test]
+fn from_backslash() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input = input.replace('/', r"\");
+        assert_eq!(&PathBuf::from_backslash(input), expected);
+    }
+}
+
+#[test]
+fn from_backslash_lossy() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input = input.replace('/', r"\");
+        let input: &OsStr = input.as_ref();
+        assert_eq!(&PathBuf::from_backslash_lossy(input), expected);
+    }
+}
+
 lazy_static! {
     static ref TO_SLASH_TESTS: Vec<(PathBuf, String)> = {
         [
