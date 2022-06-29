@@ -315,9 +315,9 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s)
     }
 
-    /// Convert the backslash path (path separated with '\') to [`std::path::PathBuf`].
+    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
     ///
-    /// Any '\' in the slash path is replaced with the file path separator.
+    /// Any '\\' in the slash path is replaced with the file path separator.
     /// The replacements only happen on non-Windows.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash<S: AsRef<str>>(s: S) -> Self {
@@ -334,19 +334,26 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s)
     }
 
+    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator.
+    /// The replacements only happen on non-Windows.
     #[cfg(target_os = "windows")]
     fn from_backslash<S: AsRef<str>>(s: S) -> Self {
         PathBuf::from(s.as_ref())
     }
 
-    /// Convert the backslash path (path separated with '\') to [`std::path::PathBuf`].
+    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
     ///
-    /// Any '\' in the slash path is replaced with the file path separator.
+    /// Any '\\' in the slash path is replaced with the file path separator.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
         s.as_ref().to_string_lossy().replace('\\', "/").into()
     }
 
+    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator.
     #[cfg(target_os = "windows")]
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
         PathBuf::from(s.as_ref())
