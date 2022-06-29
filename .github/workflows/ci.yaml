@@ -1,6 +1,10 @@
 name: CI
 on: [push, pull_request]
 
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
 jobs:
   unit-test:
     name: unit tests
@@ -10,7 +14,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Rust toolchain
         run: |
           rustup set profile minimal
@@ -26,7 +30,7 @@ jobs:
     name: clippy and rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install tools
         run: |
           rustup set profile minimal
