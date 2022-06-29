@@ -13,7 +13,7 @@ categories = ["filesystem"]
 maintenance = { status = "passively-maintained" }
 
 [package.metadata.release]
-no-dev-version = true
+dev-version = false
 
 [dependencies]
 
