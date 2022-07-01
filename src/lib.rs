@@ -54,6 +54,7 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::dbg_macro, clippy::print_stdout)]
 
+use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
@@ -68,8 +69,8 @@ use std::path::{Path, PathBuf};
 /// );
 /// ```
 pub trait PathExt {
-    fn to_slash(&self) -> Option<String>;
-    fn to_slash_lossy(&self) -> String;
+    fn to_slash(&self) -> Option<Cow<'_, str>>;
+    fn to_slash_lossy(&self) -> Cow<'_, str>;
 }
 
 impl PathExt for Path {
@@ -93,8 +94,8 @@ impl PathExt for Path {
     /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt".to_string());
     /// ```
     #[cfg(not(target_os = "windows"))]
-    fn to_slash_lossy(&self) -> String {
-        self.to_string_lossy().to_string()
+    fn to_slash_lossy(&self) -> Cow<'_, str> {
+        self.to_string_lossy()
     }
 
     /// Convert the file path into slash path as UTF-8 string.
@@ -117,7 +118,7 @@ impl PathExt for Path {
     /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt".to_string());
     /// ```
     #[cfg(target_os = "windows")]
-    fn to_slash_lossy(&self) -> String {
+    fn to_slash_lossy(&self) -> Cow<'_, str> {
         use std::path;
 
         let mut buf = String::new();
@@ -149,7 +150,7 @@ impl PathExt for Path {
             buf.pop(); // Pop last '/'
         }
 
-        buf
+        Cow::Owned(buf)
     }
 
     /// Convert the file path into slash path as UTF-8 string.
@@ -172,8 +173,8 @@ impl PathExt for Path {
     /// assert_eq!(s.to_slash(), Some("foo/bar/piyo.txt".to_string()));
     /// ```
     #[cfg(not(target_os = "windows"))]
-    fn to_slash(&self) -> Option<String> {
-        self.to_str().map(str::to_string)
+    fn to_slash(&self) -> Option<Cow<'_, str>> {
+        self.to_str().map(Cow::Borrowed)
     }
 
     /// Convert the file path into slash path as UTF-8 string.
@@ -196,7 +197,7 @@ impl PathExt for Path {
     /// assert_eq!(s.to_slash(), Some("foo/bar/piyo.txt".to_string()));
     /// ```
     #[cfg(target_os = "windows")]
-    fn to_slash(&self) -> Option<String> {
+    fn to_slash(&self) -> Option<Cow<'_, str>> {
         use std::path;
 
         let mut buf = String::new();
@@ -231,7 +232,7 @@ impl PathExt for Path {
             buf.pop(); // Pop last '/'
         }
 
-        Some(buf)
+        Some(Cow::Owned(buf))
     }
 }
 
@@ -250,8 +251,8 @@ pub trait PathBufExt {
     fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
     fn from_backslash<S: AsRef<str>>(s: S) -> Self;
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
-    fn to_slash(&self) -> Option<String>;
-    fn to_slash_lossy(&self) -> String;
+    fn to_slash(&self) -> Option<Cow<'_, str>>;
+    fn to_slash_lossy(&self) -> Cow<'_, str>;
 }
 
 impl PathBufExt for PathBuf {
@@ -435,7 +436,7 @@ impl PathBufExt for PathBuf {
     ///
     /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt".to_string());
     /// ```
-    fn to_slash_lossy(&self) -> String {
+    fn to_slash_lossy(&self) -> Cow<'_, str> {
         self.as_path().to_slash_lossy()
     }
 
@@ -457,7 +458,7 @@ impl PathBufExt for PathBuf {
     ///
     /// assert_eq!(s.to_slash(), Some("foo/bar/piyo.txt".to_string()));
     /// ```
-    fn to_slash(&self) -> Option<String> {
+    fn to_slash(&self) -> Option<Cow<'_, str>> {
         self.as_path().to_slash()
     }
 }
