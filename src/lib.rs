@@ -58,6 +58,37 @@ use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
+fn str_to_path(s: &str, sep: char) -> Cow<'_, Path> {
+    let mut buf = String::new();
+
+    for (i, c) in s.char_indices() {
+        if c == sep {
+            if buf.is_empty() {
+                buf.reserve(s.len());
+                buf.push_str(&s[..i]);
+            }
+            buf.push(MAIN_SEPARATOR);
+        } else if !buf.is_empty() {
+            buf.push(c);
+        }
+    }
+
+    if buf.is_empty() {
+        Cow::Borrowed(Path::new(s))
+    } else {
+        Cow::Owned(PathBuf::from(buf))
+    }
+}
+
+fn str_to_pathbuf<S: AsRef<str>>(s: S, sep: char) -> PathBuf {
+    let s = s
+        .as_ref()
+        .chars()
+        .map(|c| if c == sep { MAIN_SEPARATOR } else { c })
+        .collect::<String>();
+    PathBuf::from(s)
+}
+
 /// Trait to extend [`std::path::Path`].
 ///
 /// ```
@@ -117,21 +148,21 @@ impl PathExt for Path {
     /// ```
     #[cfg(target_os = "windows")]
     fn to_slash_lossy(&self) -> Cow<'_, str> {
-        use std::path;
+        use std::path::Component;
 
         let mut buf = String::new();
         let mut has_trailing_slash = false;
         for c in self.components() {
             match c {
-                path::Component::RootDir => { /* empty */ }
-                path::Component::CurDir => buf.push('.'),
-                path::Component::ParentDir => buf.push_str(".."),
-                path::Component::Prefix(prefix) => {
+                Component::RootDir => { /* empty */ }
+                Component::CurDir => buf.push('.'),
+                Component::ParentDir => buf.push_str(".."),
+                Component::Prefix(prefix) => {
                     buf.push_str(&prefix.as_os_str().to_string_lossy());
                     // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
                     continue;
                 }
-                path::Component::Normal(s) => buf.push_str(&s.to_string_lossy()),
+                Component::Normal(s) => buf.push_str(&s.to_string_lossy()),
             }
             buf.push('/');
             has_trailing_slash = true;
@@ -189,21 +220,21 @@ impl PathExt for Path {
     /// ```
     #[cfg(target_os = "windows")]
     fn to_slash(&self) -> Option<Cow<'_, str>> {
-        use std::path;
+        use std::path::Component;
 
         let mut buf = String::new();
         let mut has_trailing_slash = false;
         for c in self.components() {
             match c {
-                path::Component::RootDir => { /* empty */ }
-                path::Component::CurDir => buf.push('.'),
-                path::Component::ParentDir => buf.push_str(".."),
-                path::Component::Prefix(prefix) => {
+                Component::RootDir => { /* empty */ }
+                Component::CurDir => buf.push('.'),
+                Component::ParentDir => buf.push_str(".."),
+                Component::Prefix(prefix) => {
                     buf.push_str(prefix.as_os_str().to_str()?);
                     // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
                     continue;
                 }
-                path::Component::Normal(s) => buf.push_str(s.to_str()?),
+                Component::Normal(s) => buf.push_str(s.to_str()?),
             }
             buf.push('/');
             has_trailing_slash = true;
@@ -285,16 +316,7 @@ impl PathBufExt for PathBuf {
     /// ```
     #[cfg(target_os = "windows")]
     fn from_slash<S: AsRef<str>>(s: S) -> Self {
-        let s = s
-            .as_ref()
-            .chars()
-            .map(|c| match c {
-                '/' => MAIN_SEPARATOR,
-                c => c,
-            })
-            .collect::<String>();
-
-        PathBuf::from(s)
+        str_to_pathbuf(s, '/')
     }
 
     /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
@@ -303,16 +325,7 @@ impl PathBufExt for PathBuf {
     /// The replacements only happen on non-Windows.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash<S: AsRef<str>>(s: S) -> Self {
-        let s = s
-            .as_ref()
-            .chars()
-            .map(|c| match c {
-                '\\' => MAIN_SEPARATOR,
-                c => c,
-            })
-            .collect::<String>();
-
-        PathBuf::from(s)
+        str_to_pathbuf(s, '\\')
     }
 
     /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
@@ -483,15 +496,7 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
     #[cfg(target_os = "windows")]
     fn from_slash(s: &'a str) -> Self {
-        let s = s
-            .chars()
-            .map(|c| match c {
-                '/' => MAIN_SEPARATOR,
-                c => c,
-            })
-            .collect::<String>();
-
-        Cow::Owned(PathBuf::from(s))
+        str_to_path(s, '/')
     }
 
     /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
@@ -500,15 +505,7 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// The replacements only happen on non-Windows.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash(s: &'a str) -> Self {
-        let s = s
-            .chars()
-            .map(|c| match c {
-                '\\' => MAIN_SEPARATOR,
-                c => c,
-            })
-            .collect::<String>();
-
-        Cow::Owned(PathBuf::from(s))
+        str_to_path(s, '\\')
     }
 
     /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
@@ -525,7 +522,10 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// Any '\\' in the slash path is replaced with the file path separator.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash_lossy(s: &'a OsStr) -> Self {
-        Cow::Owned(s.to_string_lossy().replace('\\', "/").into())
+        match s.to_string_lossy() {
+            Cow::Borrowed(s) => str_to_path(s, '\\'),
+            Cow::Owned(s) => Cow::Owned(str_to_pathbuf(&s, '\\')),
+        }
     }
 
     /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
@@ -561,16 +561,10 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// loss while conversion.
     #[cfg(target_os = "windows")]
     fn from_slash_lossy(s: &'a OsStr) -> Self {
-        let s = s
-            .to_string_lossy()
-            .chars()
-            .map(|c| match c {
-                '/' => MAIN_SEPARATOR,
-                c => c,
-            })
-            .collect::<String>();
-
-        Cow::Owned(PathBuf::from(s))
+        match s.to_string_lossy() {
+            Cow::Borrowed(s) => str_to_path(s, '/'),
+            Cow::Owned(s) => Cow::Owned(str_to_pathbuf(&s, '/')),
+        }
     }
 }
 
