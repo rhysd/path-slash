@@ -126,12 +126,12 @@ impl PathExt for Path {
                 path::Component::RootDir => { /* empty */ }
                 path::Component::CurDir => buf.push('.'),
                 path::Component::ParentDir => buf.push_str(".."),
-                path::Component::Prefix(ref prefix) => {
-                    buf.push_str(previs.as_os_str().to_string_lossy());
+                path::Component::Prefix(prefix) => {
+                    buf.push_str(&prefix.as_os_str().to_string_lossy());
                     // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
                     continue;
                 }
-                path::Component::Normal(ref s) => buf.push_str(s.to_string_lossy()),
+                path::Component::Normal(s) => buf.push_str(&s.to_string_lossy()),
             }
             buf.push('/');
             has_trailing_slash = true;
@@ -198,12 +198,12 @@ impl PathExt for Path {
                 path::Component::RootDir => { /* empty */ }
                 path::Component::CurDir => buf.push('.'),
                 path::Component::ParentDir => buf.push_str(".."),
-                path::Component::Prefix(ref prefix) => {
+                path::Component::Prefix(prefix) => {
                     buf.push_str(prefix.as_os_str().to_str()?);
                     // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
                     continue;
                 }
-                path::Component::Normal(ref s) => buf.push_str(s.to_str()?),
+                path::Component::Normal(s) => buf.push_str(s.to_str()?),
             }
             buf.push('/');
             has_trailing_slash = true;
