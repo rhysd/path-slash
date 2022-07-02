@@ -16,19 +16,24 @@ and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
 
 ## Usage
 
-`path_slash::PathExt` and `path_slash::PathBufExt` traits are defined. By using them, `std::path::Path`
-and `std::path::PathBuf` gains some methods and associated functions
+`path_slash::PathExt` and `path_slash::PathBufExt` traits are defined. By using them, `std::path::Path`,
+`std::path::PathBuf` and `Cow<'_, Path>` gain some methods and associated functions.
 
 - `PathExt`
-  - `Path::to_slash(&self) -> Option<String>`
-  - `Path::to_slash_lossy(&self) -> String`
+  - `Path::to_slash(&self) -> Option<Cow<'_, Path>>`
+  - `Path::to_slash_lossy(&self) -> Cow<'_, Path>`
 - `PathBufExt`
   - `PathBuf::from_slash<S: AsRef<str>>(s: S) -> PathBuf`
   - `PathBuf::from_slash_lossy<S: AsRef<OsStr>>(s: S) -> PathBuf`
   - `PathBuf::from_backslash<S: AsRef<str>>(s: S) -> PathBuf`
   - `PathBuf::from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> PathBuf`
-  - `PathBuf::to_slash(&self) -> Option<String>`
-  - `PathBuf::to_slash_lossy(&self) -> String`
+  - `PathBuf::to_slash(&self) -> Option<Cow<'_, Path>>`
+  - `PathBuf::to_slash_lossy(&self) -> Cow<'_, Path>`
+- `CowExt`
+  - `fn from_slash(s: &str) -> Self`
+  - `fn from_slash_lossy(s: &OsStr) -> Self`
+  - `fn from_backslash(s: &str) -> Self`
+  - `fn from_backslash_lossy(s: &OsStr) -> Self`
 
 ```rust
 fn example_path_ext() {
@@ -40,10 +45,6 @@ fn example_path_ext() {
         Path::new(r"foo\bar\piyo.txt").to_slash(),
         Some("foo/bar/piyo.txt".to_string()),
     );
-    assert_eq!(
-        Path::new(r"C:\foo\bar\piyo.txt").to_slash(),
-        Some("C:/foo/bar/piyo.txt".to_string()),
-    );
 }
 
 fn example_pathbuf_ext() {
@@ -53,7 +54,18 @@ fn example_pathbuf_ext() {
     // On Windows
     let p = PathBuf::from_slash("foo/bar/piyo.txt");
     assert_eq!(p, PathBuf::from(r"foo\bar\piyo.txt"));
-    assert_eq!(p.to_slash(), Some("foo/bar/piyo.txt".to_string()));
+    assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt".to_string());
+}
+
+fn example_cow_ext() {
+    // Trait for extending std::borrow::Cow<'_, Path>
+    use path_slash::CowExt as _;
+
+    let p = Cow::from_slash("foo/bar/piyo.txt");
+    // On Windows
+    assert_eq!(p, Cow::Owned(PathBuf::from(r"foo\bar\piyo.txt")));
+    // On non-Windows
+    assert_eq!(p, Cow::Borrowed(Path::new("foo/bar/piyo.txt")));
 }
 ```
 
