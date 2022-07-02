@@ -140,7 +140,6 @@ impl PathExt for Path {
         use std::path::Component;
 
         let mut buf = String::new();
-        let mut has_trailing_slash = false;
         for c in self.components() {
             match c {
                 Component::RootDir => { /* empty */ }
@@ -154,10 +153,9 @@ impl PathExt for Path {
                 Component::Normal(s) => buf.push_str(&s.to_string_lossy()),
             }
             buf.push('/');
-            has_trailing_slash = true;
         }
 
-        if buf != "/" && has_trailing_slash {
+        if buf != "/" && buf.ends_with('/') {
             buf.pop(); // Pop last '/'
         }
 
@@ -191,7 +189,6 @@ impl PathExt for Path {
         use std::path::Component;
 
         let mut buf = String::new();
-        let mut has_trailing_slash = false;
         for c in self.components() {
             match c {
                 Component::RootDir => { /* empty */ }
@@ -205,10 +202,9 @@ impl PathExt for Path {
                 Component::Normal(s) => buf.push_str(s.to_str()?),
             }
             buf.push('/');
-            has_trailing_slash = true;
         }
 
-        if buf != "/" && has_trailing_slash {
+        if buf != "/" && buf.ends_with('/') {
             buf.pop(); // Pop last '/'
         }
 
