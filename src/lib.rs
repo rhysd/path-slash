@@ -56,7 +56,7 @@
 
 use std::borrow::Cow;
 use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
+use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
 /// Trait to extend [`std::path::Path`].
 ///
@@ -127,18 +127,11 @@ impl PathExt for Path {
                 path::Component::CurDir => buf.push('.'),
                 path::Component::ParentDir => buf.push_str(".."),
                 path::Component::Prefix(ref prefix) => {
-                    let s = prefix.as_os_str();
-                    match s.to_str() {
-                        Some(ref s) => buf.push_str(s),
-                        None => buf.push_str(&s.to_string_lossy()),
-                    }
+                    buf.push_str(previs.as_os_str().to_string_lossy());
                     // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
                     continue;
                 }
-                path::Component::Normal(ref s) => match s.to_str() {
-                    Some(ref s) => buf.push_str(s),
-                    None => buf.push_str(&s.to_string_lossy()),
-                },
+                path::Component::Normal(ref s) => buf.push_str(s.to_string_lossy()),
             }
             buf.push('/');
             has_trailing_slash = true;
@@ -206,21 +199,11 @@ impl PathExt for Path {
                 path::Component::CurDir => buf.push('.'),
                 path::Component::ParentDir => buf.push_str(".."),
                 path::Component::Prefix(ref prefix) => {
-                    if let Some(s) = prefix.as_os_str().to_str() {
-                        buf.push_str(s);
-                        // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
-                        continue;
-                    } else {
-                        return None;
-                    }
+                    buf.push_str(prefix.as_os_str().to_str()?);
+                    // C:\foo is [Prefix, RootDir, Normal]. Avoid C://
+                    continue;
                 }
-                path::Component::Normal(ref s) => {
-                    if let Some(s) = s.to_str() {
-                        buf.push_str(s);
-                    } else {
-                        return None;
-                    }
-                }
+                path::Component::Normal(ref s) => buf.push_str(s.to_str()?),
             }
             buf.push('/');
             has_trailing_slash = true;
@@ -302,13 +285,11 @@ impl PathBufExt for PathBuf {
     /// ```
     #[cfg(target_os = "windows")]
     fn from_slash<S: AsRef<str>>(s: S) -> Self {
-        use std::path;
-
         let s = s
             .as_ref()
             .chars()
             .map(|c| match c {
-                '/' => path::MAIN_SEPARATOR,
+                '/' => MAIN_SEPARATOR,
                 c => c,
             })
             .collect::<String>();
@@ -322,16 +303,15 @@ impl PathBufExt for PathBuf {
     /// The replacements only happen on non-Windows.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash<S: AsRef<str>>(s: S) -> Self {
-        use std::path;
-
         let s = s
             .as_ref()
             .chars()
             .map(|c| match c {
-                '\\' => path::MAIN_SEPARATOR,
+                '\\' => MAIN_SEPARATOR,
                 c => c,
             })
             .collect::<String>();
+
         PathBuf::from(s)
     }
 
