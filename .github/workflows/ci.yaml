@@ -22,6 +22,7 @@ jobs:
           rustup default stable
           rustup show
           cargo --version
+      - uses: Swatinem/rust-cache@v1
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
@@ -41,5 +42,6 @@ jobs:
           cargo --version
           cargo fmt --version
           cargo clippy --version
+      - uses: Swatinem/rust-cache@v1
       - run: cargo fmt -- --color always --check
       - run: cargo clippy --color always --all -- -D warnings
