@@ -22,33 +22,33 @@
 //! #[cfg(target_os = "windows")]
 //! {
 //!     assert_eq!(
-//!         Path::new(r"foo\bar\piyo.txt").to_slash(),
-//!         Some("foo/bar/piyo.txt".to_string()),
+//!         Path::new(r"foo\bar\piyo.txt").to_slash().unwrap(),
+//!         "foo/bar/piyo.txt",
 //!     );
 //!     assert_eq!(
-//!         Path::new(r"C:\foo\bar\piyo.txt").to_slash(),
-//!         Some("C:/foo/bar/piyo.txt".to_string()),
+//!         Path::new(r"C:\foo\bar\piyo.txt").to_slash().unwrap(),
+//!         "C:/foo/bar/piyo.txt",
 //!     );
 //!
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
 //!     assert_eq!(p, PathBuf::from(r"foo\bar\piyo.txt"));
-//!     assert_eq!(p.to_slash(), Some("foo/bar/piyo.txt".to_string()));
+//!     assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
 //! }
 //!
 //! #[cfg(not(target_os = "windows"))]
 //! {
 //!     assert_eq!(
-//!         Path::new("foo/bar/piyo.txt").to_slash(),
-//!         Some("foo/bar/piyo.txt".to_string()),
+//!         Path::new("foo/bar/piyo.txt").to_slash().unwrap(),
+//!         "foo/bar/piyo.txt",
 //!     );
 //!     assert_eq!(
-//!         Path::new("/foo/bar/piyo.txt").to_slash(),
-//!         Some("/foo/bar/piyo.txt".to_string()),
+//!         Path::new("/foo/bar/piyo.txt").to_slash().unwrap(),
+//!         "/foo/bar/piyo.txt",
 //!     );
 //!
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
-//!     assert_eq!(p, PathBuf::from(r"foo/bar/piyo.txt"));
-//!     assert_eq!(p.to_slash(), Some("foo/bar/piyo.txt".to_string()));
+//!     assert_eq!(p, PathBuf::from("foo/bar/piyo.txt"));
+//!     assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
 //! }
 //! ```
 #![forbid(unsafe_code)]
@@ -61,11 +61,13 @@ use std::path::{Path, PathBuf};
 /// Trait to extend [`std::path::Path`].
 ///
 /// ```
+/// # use std::path::Path;
+/// # use std::borrow::Cow;
 /// use path_slash::PathExt;
 ///
 /// assert_eq!(
-///     std::path::Path::new("foo").to_slash(),
-///     Some("foo".to_string()),
+///     Path::new("foo").to_slash(),
+///     Some(Cow::Borrowed("foo")),
 /// );
 /// ```
 pub trait PathExt {
@@ -79,10 +81,8 @@ impl PathExt for Path {
     /// Any file path separators in the file path is replaced with '/'.
     /// Any non-Unicode sequences are replaced with U+FFFD.
     ///
-    /// On non-Windows OS, it is equivalent to `to_string_lossy().to_string()`
-    ///
     /// ```
-    /// use std::path::Path;
+    /// # use std::path::Path;
     /// use path_slash::PathExt;
     ///
     /// #[cfg(target_os = "windows")]
@@ -91,7 +91,7 @@ impl PathExt for Path {
     /// #[cfg(not(target_os = "windows"))]
     /// let s = Path::new("foo/bar/piyo.txt");
     ///
-    /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt".to_string());
+    /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt");
     /// ```
     #[cfg(not(target_os = "windows"))]
     fn to_slash_lossy(&self) -> Cow<'_, str> {
@@ -103,10 +103,8 @@ impl PathExt for Path {
     /// Any file path separators in the file path is replaced with '/'.
     /// Any non-Unicode sequences are replaced with U+FFFD.
     ///
-    /// On non-Windows OS, it is equivalent to `.to_string_lossy().to_string()`.
-    ///
     /// ```
-    /// use std::path::Path;
+    /// # use std::path::Path;
     /// use path_slash::PathExt;
     ///
     /// #[cfg(target_os = "windows")]
@@ -115,7 +113,7 @@ impl PathExt for Path {
     /// #[cfg(not(target_os = "windows"))]
     /// let s = Path::new("foo/bar/piyo.txt");
     ///
-    /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt".to_string());
+    /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt");
     /// ```
     #[cfg(target_os = "windows")]
     fn to_slash_lossy(&self) -> Cow<'_, str> {
@@ -158,10 +156,9 @@ impl PathExt for Path {
     /// Any file path separators in the file path is replaced with '/'.
     /// When the path contains non-Unicode sequence, this method returns None.
     ///
-    /// On non-Windows OS, it is equivalent to `.to_str().map(str::to_string)`
-    ///
     /// ```
-    /// use std::path::Path;
+    /// # use std::path::Path;
+    /// # use std::borrow::Cow;
     /// use path_slash::PathExt;
     ///
     /// #[cfg(target_os = "windows")]
@@ -170,7 +167,7 @@ impl PathExt for Path {
     /// #[cfg(not(target_os = "windows"))]
     /// let s = Path::new("foo/bar/piyo.txt");
     ///
-    /// assert_eq!(s.to_slash(), Some("foo/bar/piyo.txt".to_string()));
+    /// assert_eq!(s.to_slash(), Some(Cow::Borrowed("foo/bar/piyo.txt")));
     /// ```
     #[cfg(not(target_os = "windows"))]
     fn to_slash(&self) -> Option<Cow<'_, str>> {
@@ -185,7 +182,8 @@ impl PathExt for Path {
     /// On non-Windows OS, it is equivalent to `.to_str().map(str::to_string)`
     ///
     /// ```
-    /// use std::path::Path;
+    /// # use std::path::Path;
+    /// # use std::borrow::Cow;
     /// use path_slash::PathExt;
     ///
     /// #[cfg(target_os = "windows")]
@@ -194,7 +192,7 @@ impl PathExt for Path {
     /// #[cfg(not(target_os = "windows"))]
     /// let s = Path::new("foo/bar/piyo.txt");
     ///
-    /// assert_eq!(s.to_slash(), Some("foo/bar/piyo.txt".to_string()));
+    /// assert_eq!(s.to_slash(), Some(Cow::Borrowed("foo/bar/piyo.txt")));
     /// ```
     #[cfg(target_os = "windows")]
     fn to_slash(&self) -> Option<Cow<'_, str>> {
@@ -239,11 +237,12 @@ impl PathExt for Path {
 /// Trait to extend [`std::path::PathBuf`].
 ///
 /// ```
+/// # use std::path::PathBuf;
 /// use path_slash::PathBufExt;
 ///
 /// assert_eq!(
-///     std::path::PathBuf::from_slash("foo/bar/piyo.txt").to_slash(),
-///     Some("foo/bar/piyo.txt".to_string()),
+///     PathBuf::from_slash("foo/bar/piyo.txt").to_slash().unwrap(),
+///     "foo/bar/piyo.txt",
 /// );
 /// ```
 pub trait PathBufExt {
@@ -265,7 +264,7 @@ impl PathBufExt for PathBuf {
     /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
     ///
     /// ```
-    /// use std::path::PathBuf;
+    /// # use std::path::PathBuf;
     /// use path_slash::PathBufExt;
     ///
     /// let p = PathBuf::from_slash("foo/bar/piyo.txt");
@@ -290,7 +289,7 @@ impl PathBufExt for PathBuf {
     /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
     ///
     /// ```
-    /// use std::path::PathBuf;
+    /// # use std::path::PathBuf;
     /// use path_slash::PathBufExt;
     ///
     /// let p = PathBuf::from_slash("foo/bar/piyo.txt");
@@ -313,6 +312,7 @@ impl PathBufExt for PathBuf {
                 c => c,
             })
             .collect::<String>();
+
         PathBuf::from(s)
     }
 
@@ -371,8 +371,8 @@ impl PathBufExt for PathBuf {
     /// loss while conversion.
     ///
     /// ```
+    /// # use std::path::PathBuf;
     /// use std::ffi::OsStr;
-    /// use std::path::PathBuf;
     /// use path_slash::PathBufExt;
     ///
     /// let s: &OsStr = "foo/bar/piyo.txt".as_ref();
@@ -400,8 +400,8 @@ impl PathBufExt for PathBuf {
     /// loss while conversion.
     ///
     /// ```
+    /// # use std::path::PathBuf;
     /// use std::ffi::OsStr;
-    /// use std::path::PathBuf;
     /// use path_slash::PathBufExt;
     ///
     /// let s: &OsStr = "foo/bar/piyo.txt".as_ref();
@@ -423,18 +423,17 @@ impl PathBufExt for PathBuf {
     /// Any file path separators in the file path is replaced with '/'.
     /// Any non-Unicode sequences are replaced with U+FFFD.
     ///
-    /// On non-Windows OS, it is equivalent to `to_string_lossy().to_string()`
-    ///
     /// ```
+    /// # use std::path::PathBuf;
     /// use path_slash::PathBufExt;
     ///
     /// #[cfg(target_os = "windows")]
-    /// let s = std::path::PathBuf::from(r"foo\bar\piyo.txt");
+    /// let s = PathBuf::from(r"foo\bar\piyo.txt");
     ///
     /// #[cfg(not(target_os = "windows"))]
-    /// let s = std::path::PathBuf::from("foo/bar/piyo.txt");
+    /// let s = PathBuf::from("foo/bar/piyo.txt");
     ///
-    /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt".to_string());
+    /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt");
     /// ```
     fn to_slash_lossy(&self) -> Cow<'_, str> {
         self.as_path().to_slash_lossy()
@@ -445,18 +444,18 @@ impl PathBufExt for PathBuf {
     /// Any file path separators in the file path is replaced with '/'.
     /// When the path contains non-Unicode sequence, this method returns None.
     ///
-    /// On non-Windows OS, it is equivalent to `.to_str().map(std::to_string())`
-    ///
     /// ```
+    /// # use std::path::PathBuf;
+    /// # use std::borrow::Cow;
     /// use path_slash::PathBufExt;
     ///
     /// #[cfg(target_os = "windows")]
-    /// let s = std::path::PathBuf::from(r"foo\bar\piyo.txt");
+    /// let s = PathBuf::from(r"foo\bar\piyo.txt");
     ///
     /// #[cfg(not(target_os = "windows"))]
-    /// let s = std::path::PathBuf::from("foo/bar/piyo.txt");
+    /// let s = PathBuf::from("foo/bar/piyo.txt");
     ///
-    /// assert_eq!(s.to_slash(), Some("foo/bar/piyo.txt".to_string()));
+    /// assert_eq!(s.to_slash(), Some(Cow::Borrowed("foo/bar/piyo.txt")));
     /// ```
     fn to_slash(&self) -> Option<Cow<'_, str>> {
         self.as_path().to_slash()

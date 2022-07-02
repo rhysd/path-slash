@@ -1,5 +1,6 @@
 use super::{PathBufExt as _, PathExt as _};
 use lazy_static::lazy_static;
+use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path;
 use std::path::PathBuf;
@@ -114,14 +115,17 @@ lazy_static! {
 #[test]
 fn to_slash_path() {
     for (input, expected) in TO_SLASH_TESTS.iter() {
-        assert_eq!(input.as_path().to_slash(), Some(expected.clone()));
+        assert_eq!(
+            input.as_path().to_slash(),
+            Some(Cow::Borrowed(expected.as_str()))
+        );
     }
 }
 
 #[test]
 fn to_slash_pathbuf() {
     for (input, expected) in TO_SLASH_TESTS.iter() {
-        assert_eq!(input.to_slash(), Some(expected.clone()));
+        assert_eq!(input.to_slash(), Some(Cow::Borrowed(expected.as_str())));
     }
 }
 
@@ -142,7 +146,10 @@ fn to_slash_lossy_pathbuf() {
 #[test]
 fn from_slash_to_slash() {
     for (_, path) in TO_SLASH_TESTS.iter() {
-        assert_eq!(PathBuf::from_slash(path).to_slash(), Some(path.clone()));
+        assert_eq!(
+            PathBuf::from_slash(path).to_slash(),
+            Some(Cow::Borrowed(path.as_str()))
+        );
     }
 }
 
