@@ -1,4 +1,4 @@
-use super::{PathBufExt as _, PathExt as _};
+use super::{CowExt as _, PathBufExt as _, PathExt as _};
 use lazy_static::lazy_static;
 use std::borrow::Cow;
 use std::ffi::OsStr;
@@ -74,6 +74,38 @@ fn from_backslash_lossy() {
         let input = input.replace('/', r"\");
         let input: &OsStr = input.as_ref();
         assert_eq!(&PathBuf::from_backslash_lossy(input), expected);
+    }
+}
+
+#[test]
+fn cow_from_slash() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        assert_eq!(&Cow::from_slash(input), expected);
+    }
+}
+
+#[test]
+fn cow_from_slash_lossy() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input: &OsStr = input.as_ref();
+        assert_eq!(&Cow::from_slash_lossy(input), expected);
+    }
+}
+
+#[test]
+fn cow_from_backslash() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input = input.replace('/', r"\");
+        assert_eq!(&Cow::from_backslash(&input), expected);
+    }
+}
+
+#[test]
+fn cow_from_backslash_lossy() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input = input.replace('/', r"\");
+        let input: &OsStr = input.as_ref();
+        assert_eq!(&Cow::from_backslash_lossy(input), expected);
     }
 }
 
