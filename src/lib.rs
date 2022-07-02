@@ -1,10 +1,10 @@
-//! A library for converting file paths to and from "slash paths."
+//! A library for converting file paths to and from "slash paths".
 //!
 //! A "slash path" is a path whose components are always separated by `/` and never `\`.
 //!
 //! On Unix-like OSes, the path separator is `/`. So any conversion is not necessary.
-//! But on Windows, the file path separator is `\`, and needs to be replaced with `/`. Of course, `\`s used
-//! for escaping characters should not be replaced.
+//! But on Windows, the file path separator is `\`, and needs to be replaced with `/` for converting
+//! the paths to "slash paths". Of course, `\`s used for escaping characters should not be replaced.
 //!
 //! For example, a file path `foo\bar\piyo.txt` can be converted to/from a slash path `foo/bar/piyo.txt`.
 //!
@@ -13,42 +13,49 @@
 //!
 //! ```rust
 //! use std::path::{Path, PathBuf};
+//! use std::borrow::Cow;
 //!
 //! // Trait for extending std::path::Path
-//! use path_slash::PathExt;
+//! use path_slash::PathExt as _;
 //! // Trait for extending std::path::PathBuf
-//! use path_slash::PathBufExt;
+//! use path_slash::PathBufExt as _;
+//! // Trait for extending std::borrow::Cow
+//! use path_slash::CowExt as _;
 //!
 //! #[cfg(target_os = "windows")]
 //! {
+//!     // Convert from `Path`
 //!     assert_eq!(
 //!         Path::new(r"foo\bar\piyo.txt").to_slash().unwrap(),
 //!         "foo/bar/piyo.txt",
 //!     );
-//!     assert_eq!(
-//!         Path::new(r"C:\foo\bar\piyo.txt").to_slash().unwrap(),
-//!         "C:/foo/bar/piyo.txt",
-//!     );
 //!
+//!     // Convert to/from PathBuf
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
 //!     assert_eq!(p, PathBuf::from(r"foo\bar\piyo.txt"));
 //!     assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
+//!
+//!     // Convert to Cow<'_, Path>
+//!     let p = Cow::from_slash("foo/bar/piyo.txt");
+//!     assert_eq!(p, Cow::Owned(PathBuf::from(r"foo\bar\piyo.txt")));
 //! }
 //!
 //! #[cfg(not(target_os = "windows"))]
 //! {
+//!     // Convert from `Path`
 //!     assert_eq!(
 //!         Path::new("foo/bar/piyo.txt").to_slash().unwrap(),
 //!         "foo/bar/piyo.txt",
 //!     );
-//!     assert_eq!(
-//!         Path::new("/foo/bar/piyo.txt").to_slash().unwrap(),
-//!         "/foo/bar/piyo.txt",
-//!     );
 //!
+//!     // Convert to/from PathBuf
 //!     let p = PathBuf::from_slash("foo/bar/piyo.txt");
 //!     assert_eq!(p, PathBuf::from("foo/bar/piyo.txt"));
 //!     assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
+//!
+//!     // Convert to Cow<'_, Path>
+//!     let p = Cow::from_slash("foo/bar/piyo.txt");
+//!     assert_eq!(p, Cow::Borrowed(Path::new("foo/bar/piyo.txt")));
 //! }
 //! ```
 #![forbid(unsafe_code)]
@@ -94,7 +101,7 @@ fn str_to_pathbuf<S: AsRef<str>>(s: S, sep: char) -> PathBuf {
 /// ```
 /// # use std::path::Path;
 /// # use std::borrow::Cow;
-/// use path_slash::PathExt;
+/// use path_slash::PathExt as _;
 ///
 /// assert_eq!(
 ///     Path::new("foo").to_slash(),
@@ -114,7 +121,7 @@ impl PathExt for Path {
     ///
     /// ```
     /// # use std::path::Path;
-    /// use path_slash::PathExt;
+    /// use path_slash::PathExt as _;
     ///
     /// #[cfg(target_os = "windows")]
     /// let s = Path::new(r"foo\bar\piyo.txt");
@@ -136,7 +143,7 @@ impl PathExt for Path {
     ///
     /// ```
     /// # use std::path::Path;
-    /// use path_slash::PathExt;
+    /// use path_slash::PathExt as _;
     ///
     /// #[cfg(target_os = "windows")]
     /// let s = Path::new(r"foo\bar\piyo.txt");
@@ -183,7 +190,7 @@ impl PathExt for Path {
     /// ```
     /// # use std::path::Path;
     /// # use std::borrow::Cow;
-    /// use path_slash::PathExt;
+    /// use path_slash::PathExt as _;
     ///
     /// #[cfg(target_os = "windows")]
     /// let s = Path::new(r"foo\bar\piyo.txt");
@@ -208,7 +215,7 @@ impl PathExt for Path {
     /// ```
     /// # use std::path::Path;
     /// # use std::borrow::Cow;
-    /// use path_slash::PathExt;
+    /// use path_slash::PathExt as _;
     ///
     /// #[cfg(target_os = "windows")]
     /// let s = Path::new(r"foo\bar\piyo.txt");
@@ -319,41 +326,7 @@ impl PathBufExt for PathBuf {
         str_to_pathbuf(s, '/')
     }
 
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
-    ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on non-Windows.
-    #[cfg(not(target_os = "windows"))]
-    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
-        str_to_pathbuf(s, '\\')
-    }
-
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
-    ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on non-Windows.
-    #[cfg(target_os = "windows")]
-    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
-        PathBuf::from(s.as_ref())
-    }
-
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
-    ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
-    #[cfg(not(target_os = "windows"))]
-    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        s.as_ref().to_string_lossy().replace('\\', "/").into()
-    }
-
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
-    ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
-    #[cfg(target_os = "windows")]
-    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        PathBuf::from(s.as_ref())
-    }
-
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] slash path (path separated with '/') to [`std::path::PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
     /// The replacements only happen on Windows since the file path separators on other OSes are the
@@ -382,7 +355,7 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s.as_ref())
     }
 
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] slash path (path separated with '/') to [`std::path::PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
     /// The replacements only happen on Windows since the file path separators on other OSes are the
@@ -409,6 +382,40 @@ impl PathBufExt for PathBuf {
     #[cfg(target_os = "windows")]
     fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
         Self::from_slash(&s.as_ref().to_string_lossy())
+    }
+
+    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator.
+    /// The replacements only happen on non-Windows.
+    #[cfg(not(target_os = "windows"))]
+    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
+        str_to_pathbuf(s, '\\')
+    }
+
+    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator.
+    /// The replacements only happen on non-Windows.
+    #[cfg(target_os = "windows")]
+    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
+        PathBuf::from(s.as_ref())
+    }
+
+    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator.
+    #[cfg(not(target_os = "windows"))]
+    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
+        s.as_ref().to_string_lossy().replace('\\', "/").into()
+    }
+
+    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator.
+    #[cfg(target_os = "windows")]
+    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
+        PathBuf::from(s.as_ref())
     }
 
     /// Convert the file path into slash path as UTF-8 string.
@@ -460,7 +467,7 @@ impl PathBufExt for PathBuf {
 /// ```
 /// # use std::path::Path;
 /// # use std::borrow::Cow;
-/// use path_slash::{CowExt, PathExt};
+/// use path_slash::{CowExt as _, PathExt as _};
 ///
 /// assert_eq!(
 ///     Cow::from_slash("foo/bar/piyo.txt").to_slash_lossy(),
@@ -475,51 +482,149 @@ pub trait CowExt<'a> {
 }
 
 impl<'a> CowExt<'a> for Cow<'a, Path> {
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
+    /// Convert the slash path (path separated with '/') to [`Cow`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on Windows since the file path separators on other OSes are the
-    /// same as '/'.
+    /// Heap allocation may only happen on Windows since the file path separators on other OSes are
+    /// the same as '/'.
     ///
-    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use std::path::Path;
+    /// use path_slash::CowExt;
+    ///
+    /// #[cfg(not(target_os = "windows"))]
+    /// assert_eq!(
+    ///     Cow::from_slash("foo/bar/piyo.txt"),
+    ///     Path::new("foo/bar/piyo.txt"),
+    /// );
+    ///
+    /// #[cfg(target_os = "windows")]
+    /// assert_eq!(
+    ///     Cow::from_slash("foo/bar/piyo.txt"),
+    ///     Path::new(r"foo\\bar\\piyo.txt"),
+    /// );
+    /// ```
     #[cfg(not(target_os = "windows"))]
     fn from_slash(s: &'a str) -> Self {
         Cow::Borrowed(Path::new(s))
     }
 
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
+    /// Convert the slash path (path separated with '/') to [`Cow`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on Windows since the file path separators on other OSes are the
-    /// same as '/'.
+    /// Heap allocation may only happen on Windows since the file path separators on other OSes are
+    /// the same as '/'.
     ///
-    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use std::path::Path;
+    /// use path_slash::CowExt;
+    ///
+    /// #[cfg(not(target_os = "windows"))]
+    /// assert_eq!(
+    ///     Cow::from_slash("foo/bar/piyo.txt"),
+    ///     Path::new("foo/bar/piyo.txt"),
+    /// );
+    ///
+    /// #[cfg(target_os = "windows")]
+    /// assert_eq!(
+    ///     Cow::from_slash("foo/bar/piyo.txt"),
+    ///     Path::new(r"foo\\bar\\piyo.txt"),
+    /// );
+    /// ```
     #[cfg(target_os = "windows")]
     fn from_slash(s: &'a str) -> Self {
         str_to_path(s, '/')
     }
 
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] slash path (path separated with '/') to [`Cow`].
     ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on non-Windows.
+    /// Any '/' in the slash path is replaced with the file path separator.
+    /// Heap allocation may only happen on Windows since the file path separators on other OSes are
+    /// the same as '/'.
+    ///
+    /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
+    /// On non-Windows OS, there is no loss while conversion.
+    #[cfg(not(target_os = "windows"))]
+    fn from_slash_lossy(s: &'a OsStr) -> Self {
+        Cow::Borrowed(Path::new(s))
+    }
+
+    /// Convert the [`OsStr`] slash path (path separated with '/') to [`Cow`].
+    ///
+    /// Any '/' in the slash path is replaced with the file path separator.
+    /// Heap allocation may only happen on Windows since the file path separators on other OSes are
+    /// the same as '/'.
+    ///
+    /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
+    /// On non-Windows OS, there is no loss while conversion.
+    #[cfg(target_os = "windows")]
+    fn from_slash_lossy(s: &'a OsStr) -> Self {
+        match s.to_string_lossy() {
+            Cow::Borrowed(s) => str_to_path(s, '/'),
+            Cow::Owned(s) => Cow::Owned(str_to_pathbuf(&s, '/')),
+        }
+    }
+
+    /// Convert the backslash path (path separated with '\\') to [`Cow`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
+    /// only happen on non-Windows.
+    ///
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use std::path::Path;
+    /// use path_slash::CowExt;
+    ///
+    /// #[cfg(not(target_os = "windows"))]
+    /// assert_eq!(
+    ///     Cow::from_backslash(r"foo\\bar\\piyo.txt"),
+    ///     Path::new("foo/bar/piyo.txt"),
+    /// );
+    ///
+    /// #[cfg(target_os = "windows")]
+    /// assert_eq!(
+    ///     Cow::from_backslash(r"foo\\bar\\piyo.txt"),
+    ///     Path::new(r"foo\\bar\\piyo.txt"),
+    /// );
+    /// ```
     #[cfg(not(target_os = "windows"))]
     fn from_backslash(s: &'a str) -> Self {
         str_to_path(s, '\\')
     }
 
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    /// Convert the backslash path (path separated with '\\') to [`Cow`].
     ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on non-Windows.
+    /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
+    /// only happen on non-Windows.
+    ///
+    /// ```
+    /// # use std::borrow::Cow;
+    /// # use std::path::Path;
+    /// use path_slash::CowExt;
+    ///
+    /// #[cfg(not(target_os = "windows"))]
+    /// assert_eq!(
+    ///     Cow::from_backslash(r"foo\\bar\\piyo.txt"),
+    ///     Path::new("foo/bar/piyo.txt"),
+    /// );
+    ///
+    /// #[cfg(target_os = "windows")]
+    /// assert_eq!(
+    ///     Cow::from_backslash(r"foo\\bar\\piyo.txt"),
+    ///     Path::new(r"foo\\bar\\piyo.txt"),
+    /// );
+    /// ```
     #[cfg(target_os = "windows")]
     fn from_backslash(s: &'a str) -> Self {
         Cow::Borrowed(Path::new(s))
     }
 
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`Cow`].
     ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
+    /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
+    /// only happen on non-Windows.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash_lossy(s: &'a OsStr) -> Self {
         match s.to_string_lossy() {
@@ -528,43 +633,13 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
         }
     }
 
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`Cow`].
     ///
-    /// Any '\\' in the slash path is replaced with the file path separator.
+    /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
+    /// only happen on non-Windows.
     #[cfg(target_os = "windows")]
     fn from_backslash_lossy(s: &'a OsStr) -> Self {
         Cow::Borrowed(Path::new(s))
-    }
-
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
-    ///
-    /// Any '/' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on Windows since the file path separators on other OSes are the
-    /// same as '/'.
-    ///
-    /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
-    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`] and there is no
-    /// loss while conversion.
-    #[cfg(not(target_os = "windows"))]
-    fn from_slash_lossy(s: &'a OsStr) -> Self {
-        Cow::Borrowed(Path::new(s))
-    }
-
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
-    ///
-    /// Any '/' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on Windows since the file path separators on other OSes are the
-    /// same as '/'.
-    ///
-    /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
-    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`] and there is no
-    /// loss while conversion.
-    #[cfg(target_os = "windows")]
-    fn from_slash_lossy(s: &'a OsStr) -> Self {
-        match s.to_string_lossy() {
-            Cow::Borrowed(s) => str_to_path(s, '/'),
-            Cow::Owned(s) => Cow::Owned(str_to_pathbuf(&s, '/')),
-        }
     }
 }
 
