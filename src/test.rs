@@ -1,5 +1,6 @@
-use super::{PathBufExt as _, PathExt as _};
+use super::{CowExt as _, PathBufExt as _, PathExt as _};
 use lazy_static::lazy_static;
+use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path;
 use std::path::PathBuf;
@@ -76,6 +77,38 @@ fn from_backslash_lossy() {
     }
 }
 
+#[test]
+fn cow_from_slash() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        assert_eq!(&Cow::from_slash(input), expected);
+    }
+}
+
+#[test]
+fn cow_from_slash_lossy() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input: &OsStr = input.as_ref();
+        assert_eq!(&Cow::from_slash_lossy(input), expected);
+    }
+}
+
+#[test]
+fn cow_from_backslash() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input = input.replace('/', r"\");
+        assert_eq!(&Cow::from_backslash(&input), expected);
+    }
+}
+
+#[test]
+fn cow_from_backslash_lossy() {
+    for (input, expected) in FROM_SLASH_TESTS.iter() {
+        let input = input.replace('/', r"\");
+        let input: &OsStr = input.as_ref();
+        assert_eq!(&Cow::from_backslash_lossy(input), expected);
+    }
+}
+
 lazy_static! {
     static ref TO_SLASH_TESTS: Vec<(PathBuf, String)> = {
         [
@@ -114,14 +147,17 @@ lazy_static! {
 #[test]
 fn to_slash_path() {
     for (input, expected) in TO_SLASH_TESTS.iter() {
-        assert_eq!(input.as_path().to_slash(), Some(expected.clone()));
+        assert_eq!(
+            input.as_path().to_slash(),
+            Some(Cow::Borrowed(expected.as_str()))
+        );
     }
 }
 
 #[test]
 fn to_slash_pathbuf() {
     for (input, expected) in TO_SLASH_TESTS.iter() {
-        assert_eq!(input.to_slash(), Some(expected.clone()));
+        assert_eq!(input.to_slash(), Some(Cow::Borrowed(expected.as_str())));
     }
 }
 
@@ -142,7 +178,10 @@ fn to_slash_lossy_pathbuf() {
 #[test]
 fn from_slash_to_slash() {
     for (_, path) in TO_SLASH_TESTS.iter() {
-        assert_eq!(PathBuf::from_slash(path).to_slash(), Some(path.clone()));
+        assert_eq!(
+            PathBuf::from_slash(path).to_slash(),
+            Some(Cow::Borrowed(path.as_str()))
+        );
     }
 }
 
@@ -154,8 +193,8 @@ mod windows {
     fn with_driver_letter_to_slash() {
         let path = PathBuf::from_slash("C:/foo/bar");
         assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
-        let slash = path.to_slash();
-        assert_eq!(slash, Some("C:/foo/bar".to_string()));
+        let slash = path.to_slash().unwrap();
+        assert_eq!(slash, "C:/foo/bar");
     }
 
     #[test]
@@ -163,7 +202,7 @@ mod windows {
         let path = PathBuf::from_slash("C:/foo/bar");
         assert_eq!(path, PathBuf::from(r"C:\foo\bar"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, "C:/foo/bar".to_string());
+        assert_eq!(slash, "C:/foo/bar");
     }
 
     #[test]
@@ -171,7 +210,7 @@ mod windows {
         let path = PathBuf::from_slash("C:");
         assert_eq!(path, PathBuf::from(r"C:"));
         let slash = path.to_slash().unwrap();
-        assert_eq!(slash, "C:".to_string());
+        assert_eq!(slash, "C:");
     }
 
     #[test]
@@ -179,7 +218,7 @@ mod windows {
         let path = PathBuf::from_slash("C:");
         assert_eq!(path, PathBuf::from(r"C:"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, "C:".to_string());
+        assert_eq!(slash, "C:");
     }
 
     #[test]
@@ -187,7 +226,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\?\C:/foo/bar");
         assert_eq!(path, PathBuf::from(r"\\?\C:\foo\bar"));
         let slash = path.to_slash().unwrap();
-        assert_eq!(slash, r"\\?\C:/foo/bar".to_string());
+        assert_eq!(slash, r"\\?\C:/foo/bar");
     }
 
     #[test]
@@ -195,7 +234,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\?\C:/foo/bar");
         assert_eq!(path, PathBuf::from(r"\\?\C:\foo\bar"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, r"\\?\C:/foo/bar".to_string());
+        assert_eq!(slash, r"\\?\C:/foo/bar");
     }
 
     #[test]
@@ -203,7 +242,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\server\share/foo/bar");
         assert_eq!(path, PathBuf::from(r"\\server\share\foo\bar"));
         let slash = path.to_slash().unwrap();
-        assert_eq!(slash, r"\\server\share/foo/bar".to_string());
+        assert_eq!(slash, r"\\server\share/foo/bar");
     }
 
     #[test]
@@ -211,7 +250,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\server\share/foo/bar");
         assert_eq!(path, PathBuf::from(r"\\server\share\foo\bar"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, r"\\server\share/foo/bar".to_string());
+        assert_eq!(slash, r"\\server\share/foo/bar");
     }
 
     #[test]
@@ -219,7 +258,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\server\share");
         assert_eq!(path, PathBuf::from(r"\\server\share"));
         let slash = path.to_slash().unwrap();
-        assert_eq!(slash, r"\\server\share".to_string());
+        assert_eq!(slash, r"\\server\share");
     }
 
     #[test]
@@ -227,7 +266,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\server\share");
         assert_eq!(path, PathBuf::from(r"\\server\share"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, r"\\server\share".to_string());
+        assert_eq!(slash, r"\\server\share");
     }
 
     #[test]
@@ -235,7 +274,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\?\UNC\server\share/foo/bar");
         assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share\foo\bar"));
         let slash = path.to_slash().unwrap();
-        assert_eq!(slash, r"\\?\UNC\server\share/foo/bar".to_string());
+        assert_eq!(slash, r"\\?\UNC\server\share/foo/bar");
     }
 
     #[test]
@@ -243,7 +282,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\?\UNC\server\share/foo/bar");
         assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share\foo\bar"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, r"\\?\UNC\server\share/foo/bar".to_string());
+        assert_eq!(slash, r"\\?\UNC\server\share/foo/bar");
     }
 
     #[test]
@@ -251,7 +290,7 @@ mod windows {
         let path = PathBuf::from_slash(r"\\?\UNC\server\share");
         assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share"));
         let slash = path.to_slash().unwrap();
-        assert_eq!(slash, r"\\?\UNC\server\share".to_string());
+        assert_eq!(slash, r"\\?\UNC\server\share");
     }
 
     #[test]
@@ -259,6 +298,6 @@ mod windows {
         let path = PathBuf::from_slash(r"\\?\UNC\server\share");
         assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share"));
         let slash = path.to_slash_lossy();
-        assert_eq!(slash, r"\\?\UNC\server\share".to_string());
+        assert_eq!(slash, r"\\?\UNC\server\share");
     }
 }
