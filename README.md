@@ -17,8 +17,8 @@ and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
 
 ## Usage
 
-`path_slash::PathExt` and `path_slash::PathBufExt` traits are defined. By using them, `std::path::Path`,
-`std::path::PathBuf` and `Cow<'_, Path>` gain some methods and associated functions.
+`path_slash::PathExt`, `path_slash::PathBufExt` and `path_slash::CowExt` traits are defined. By using them,
+`std::path::Path`, `std::path::PathBuf` and `std::borrow::Cow<'_, Path>` gain some methods and associated functions.
 
 - `PathExt`
   - `Path::to_slash(&self) -> Option<Cow<'_, Path>>`

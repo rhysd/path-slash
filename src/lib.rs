@@ -2,7 +2,7 @@
 //!
 //! A "slash path" is a path whose components are always separated by `/` and never `\`.
 //!
-//! On Unix-like OSes, the path separator is `/`. So any conversion is not necessary.
+//! On Unix-like OS, the path separator is `/`. So any conversion is not necessary.
 //! But on Windows, the file path separator is `\`, and needs to be replaced with `/` for converting
 //! the paths to "slash paths". Of course, `\`s used for escaping characters should not be replaced.
 //!
@@ -108,7 +108,7 @@ fn str_to_pathbuf<S: AsRef<str>>(s: S, sep: char) -> PathBuf {
     PathBuf::from(s)
 }
 
-/// Trait to extend [`std::path::Path`].
+/// Trait to extend [`Path`].
 ///
 /// ```
 /// # use std::path::Path;
@@ -126,9 +126,10 @@ pub trait PathExt {
 }
 
 impl PathExt for Path {
-    /// Convert the file path into slash path as UTF-8 string.
+    /// Convert the file path into slash path as UTF-8 string. This method is similar to
+    /// [`Path::to_string_lossy`], but the path separator is fixed to '/'.
     ///
-    /// Any file path separators in the file path is replaced with '/'.
+    /// Any file path separators in the file path are replaced with '/'.
     /// Any non-Unicode sequences are replaced with U+FFFD.
     ///
     /// ```
@@ -174,9 +175,11 @@ impl PathExt for Path {
         Cow::Owned(buf)
     }
 
-    /// Convert the file path into slash path as UTF-8 string.
+    /// Convert the file path into slash path as UTF-8 string. This method is similar to
+    /// [`Path::to_str`], but the path separator is fixed to '/'.
     ///
-    /// Any file path separators in the file path is replaced with '/'.
+    /// Any file path separators in the file path are replaced with '/'. Only when the replacement
+    /// happens, heap allocation happens and `Cow::Owned` is returned.
     /// When the path contains non-Unicode sequence, this method returns None.
     ///
     /// ```
@@ -224,7 +227,7 @@ impl PathExt for Path {
     }
 }
 
-/// Trait to extend [`std::path::PathBuf`].
+/// Trait to extend [`PathBuf`].
 ///
 /// ```
 /// # use std::path::PathBuf;
@@ -245,13 +248,13 @@ pub trait PathBufExt {
 }
 
 impl PathBufExt for PathBuf {
-    /// Convert the slash path (path separated with '/') to [`std::path::PathBuf`].
+    /// Convert the slash path (path separated with '/') to [`PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on Windows since the file path separators on other OSes are the
-    /// same as '/'.
+    /// The replacements only happen on Windows since the file path separators on Unix-like OS are
+    /// the same as '/'.
     ///
-    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`].
+    /// On non-Windows OS, it is simply equivalent to [`PathBuf::from`].
     ///
     /// ```
     /// # use std::path::PathBuf;
@@ -274,14 +277,14 @@ impl PathBufExt for PathBuf {
         str_to_pathbuf(s, '/')
     }
 
-    /// Convert the [`OsStr`] slash path (path separated with '/') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] slash path (path separated with '/') to [`PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
-    /// The replacements only happen on Windows since the file path separators on other OSes are the
-    /// same as '/'.
+    /// The replacements only happen on Windows since the file path separators on Unix-like OS are
+    /// the same as '/'.
     ///
     /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
-    /// On non-Windows OS, it is simply equivalent to [`std::path::PathBuf::from`] and there is no
+    /// On non-Windows OS, it is simply equivalent to [`PathBuf::from`] and there is no
     /// loss while conversion.
     ///
     /// ```
@@ -307,7 +310,7 @@ impl PathBufExt for PathBuf {
         Self::from_slash(&s.as_ref().to_string_lossy())
     }
 
-    /// Convert the backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    /// Convert the backslash path (path separated with '\\') to [`PathBuf`].
     ///
     /// Any '\\' in the slash path is replaced with the file path separator.
     /// The replacements only happen on non-Windows.
@@ -320,7 +323,7 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s.as_ref())
     }
 
-    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`std::path::PathBuf`].
+    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`PathBuf`].
     ///
     /// Any '\\' in the slash path is replaced with the file path separator.
     #[cfg(not(target_os = "windows"))]
@@ -332,9 +335,10 @@ impl PathBufExt for PathBuf {
         PathBuf::from(s.as_ref())
     }
 
-    /// Convert the file path into slash path as UTF-8 string.
+    /// Convert the file path into slash path as UTF-8 string. This method is similar to
+    /// [`Path::to_string_lossy`], but the path separator is fixed to '/'.
     ///
-    /// Any file path separators in the file path is replaced with '/'.
+    /// Any file path separators in the file path are replaced with '/'.
     /// Any non-Unicode sequences are replaced with U+FFFD.
     ///
     /// ```
@@ -353,9 +357,11 @@ impl PathBufExt for PathBuf {
         self.as_path().to_slash_lossy()
     }
 
-    /// Convert the file path into slash path as UTF-8 string.
+    /// Convert the file path into slash path as UTF-8 string. This method is similar to
+    /// [`Path::to_str`], but the path separator is fixed to '/'.
     ///
-    /// Any file path separators in the file path is replaced with '/'.
+    /// Any file path separators in the file path are replaced with '/'. Only when the replacement
+    /// happens, heap allocation happens and `Cow::Owned` is returned.
     /// When the path contains non-Unicode sequence, this method returns None.
     ///
     /// ```
@@ -399,8 +405,8 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// Convert the slash path (path separated with '/') to [`Cow`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
-    /// Heap allocation may only happen on Windows since the file path separators on other OSes are
-    /// the same as '/'.
+    /// Heap allocation may only happen on Windows since the file path separators on Unix-like OS
+    /// are the same as '/'.
     ///
     /// ```
     /// # use std::borrow::Cow;
@@ -431,8 +437,8 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// Convert the [`OsStr`] slash path (path separated with '/') to [`Cow`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
-    /// Heap allocation may only happen on Windows since the file path separators on other OSes are
-    /// the same as '/'.
+    /// Heap allocation may only happen on Windows since the file path separators on Unix-like OS
+    /// are the same as '/'.
     ///
     /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
     /// On non-Windows OS, there is no loss while conversion.
