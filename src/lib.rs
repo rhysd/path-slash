@@ -68,27 +68,12 @@ use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 #[cfg(target_os = "windows")]
 mod windows {
     use super::*;
-    use std::io::{self, Write};
-
-    #[derive(Default)]
-    struct EndsWithMainSep(bool);
-
-    impl io::Write for EndsWithMainSep {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.0 = buf.ends_with(&[MAIN_SEPARATOR as u8]);
-            Ok(buf.len())
-        }
-        fn flush(&mut self) -> io::Result<()> {
-            Ok(())
-        }
-    }
+    use std::os::windows::ffi::OsStrExt;
 
     // Workaround for Windows. There is no way to extract raw byte sequence from `OsStr` (in `Path`).
     // And `OsStr::to_string_lossy` may cause extra heap allocation.
-    pub fn ends_with_main_sep(p: &Path) -> bool {
-        let mut w = EndsWithMainSep::default();
-        write!(&mut w, "{}", p.display()).unwrap();
-        w.0
+    pub(crate) fn ends_with_main_sep(p: &Path) -> bool {
+        p.as_os_str().encode_wide().last() == Some(MAIN_SEPARATOR as u16)
     }
 }
 
