@@ -20,13 +20,20 @@ jobs:
           rustup set profile minimal
           rustup update stable
           rustup default stable
+          rustup component add llvm-tools-preview
           rustup show
           cargo --version
       - uses: Swatinem/rust-cache@v1
-      - name: Run tests
-        env:
-          RUST_BACKTRACE: 1
-        run: cargo test --color always --all
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Run tests with measuring coverage
+        run: |
+          cargo llvm-cov --color always --lcov --output-path lcov.info
+          cargo llvm-cov --color always --no-run
+      - uses: codecov/codecov-action@v3
+        with:
+          files: lcov.info
+
   linter:
     name: clippy and rustfmt
     runs-on: ubuntu-latest
