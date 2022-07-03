@@ -65,6 +65,18 @@ use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf, MAIN_SEPARATOR};
 
+#[cfg(target_os = "windows")]
+mod windows {
+    use super::*;
+    use std::os::windows::ffi::OsStrExt;
+
+    // Workaround for Windows. There is no way to extract raw byte sequence from `OsStr` (in `Path`).
+    // And `OsStr::to_string_lossy` may cause extra heap allocation.
+    pub(crate) fn ends_with_main_sep(p: &Path) -> bool {
+        p.as_os_str().encode_wide().last() == Some(MAIN_SEPARATOR as u16)
+    }
+}
+
 fn str_to_path(s: &str, sep: char) -> Cow<'_, Path> {
     let mut buf = String::new();
 
@@ -155,7 +167,7 @@ impl PathExt for Path {
             buf.push('/');
         }
 
-        if buf != "/" && buf.ends_with('/') {
+        if !windows::ends_with_main_sep(self) && buf != "/" && buf.ends_with('/') {
             buf.pop(); // Pop last '/'
         }
 
@@ -204,7 +216,7 @@ impl PathExt for Path {
             buf.push('/');
         }
 
-        if buf != "/" && buf.ends_with('/') {
+        if !windows::ends_with_main_sep(self) && buf != "/" && buf.ends_with('/') {
             buf.pop(); // Pop last '/'
         }
 
