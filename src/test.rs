@@ -2,8 +2,7 @@ use super::{CowExt as _, PathBufExt as _, PathExt as _};
 use lazy_static::lazy_static;
 use std::borrow::Cow;
 use std::ffi::OsStr;
-use std::path;
-use std::path::PathBuf;
+use std::path::{PathBuf, MAIN_SEPARATOR};
 
 lazy_static! {
     static ref FROM_SLASH_TESTS: Vec<(String, PathBuf)> = {
@@ -23,6 +22,9 @@ lazy_static! {
             ("foo//bar", "foo/bar"),
             ("foo/../bar", "foo/../bar"),
             ("foo/./bar", "foo/./bar"),
+            ("/あ/い/う/え/お", "/あ/い/う/え/お"),
+            ("あ/い/う/え/お/", "あ/い/う/え/お/"),
+            ("/あ/い/う/え/お/", "/あ/い/う/え/お/"),
         ]
         .iter()
         .map(|item| {
@@ -31,7 +33,7 @@ lazy_static! {
                 let s = expected
                     .chars()
                     .map(|c| match c {
-                        '/' => path::MAIN_SEPARATOR,
+                        '/' => MAIN_SEPARATOR,
                         _ => c,
                     })
                     .collect::<String>();
@@ -123,6 +125,9 @@ lazy_static! {
             "foo/..",
             "foo/bar",
             "foo/../bar",
+            "あ/い/う/え/お/",
+            "/あ/い/う/え/お",
+            "/あ/い/う/え/お/",
         ]
         .iter()
         .map(|expected| {
@@ -130,7 +135,7 @@ lazy_static! {
                 let s = expected
                     .chars()
                     .map(|c| match c {
-                        '/' => path::MAIN_SEPARATOR,
+                        '/' => MAIN_SEPARATOR,
                         _ => c,
                     })
                     .collect::<String>();
@@ -188,6 +193,7 @@ fn from_slash_to_slash() {
 #[cfg(target_os = "windows")]
 mod windows {
     use super::*;
+    use std::path::Path;
 
     #[test]
     fn with_driver_letter_to_slash() {
@@ -299,5 +305,60 @@ mod windows {
         assert_eq!(path, PathBuf::from(r"\\?\UNC\server\share"));
         let slash = path.to_slash_lossy();
         assert_eq!(slash, r"\\?\UNC\server\share");
+    }
+
+    const UTF16_TEST_CASES: &[(&str, &str)] = &[
+        (
+            // あ\い\う\え\お
+            "\x30\x42\x00\x5c\x30\x44\x00\x5c\x30\x46\x00\x5c\x30\x48\x00\x5c\x30\x4a",
+            // あ/い/う/え/お
+            "\x30\x42\x00\x2f\x30\x44\x00\x2f\x30\x46\x00\x2f\x30\x48\x00\x2f\x30\x4a",
+        ),
+        (
+            // あ\い\う\え\お\
+            "\x30\x42\x00\x5c\x30\x44\x00\x5c\x30\x46\x00\x5c\x30\x48\x00\x5c\x30\x4a\x00\x5c",
+            // あ/い/う/え/お/
+            "\x30\x42\x00\x2f\x30\x44\x00\x2f\x30\x46\x00\x2f\x30\x48\x00\x2f\x30\x4a\x00\x2f",
+        ),
+    ];
+
+    #[test]
+    fn utf16_encoded_os_str_to_slash() {
+        for (b, s) in UTF16_TEST_CASES {
+            let p = Path::new(b);
+            assert_eq!(p.to_slash().unwrap(), *s);
+        }
+    }
+
+    #[test]
+    fn utf16_encoded_os_str_pathbuf_from_slash_lossy() {
+        for (b, s) in UTF16_TEST_CASES {
+            let p = PathBuf::from_slash_lossy(s);
+            assert_eq!(p, Path::new(b));
+        }
+    }
+
+    #[test]
+    fn utf16_encoded_os_str_pathbuf_from_slash() {
+        for (b, s) in UTF16_TEST_CASES {
+            let p = PathBuf::from_slash(s);
+            assert_eq!(p, Path::new(b));
+        }
+    }
+
+    #[test]
+    fn utf16_encoded_os_str_cow_from_slash_lossy() {
+        for (b, s) in UTF16_TEST_CASES {
+            let p = Cow::from_slash_lossy(OsStr::new(s));
+            assert_eq!(p, Path::new(b));
+        }
+    }
+
+    #[test]
+    fn utf16_encoded_os_str_cow_from_slash() {
+        for (b, s) in UTF16_TEST_CASES {
+            let p = Cow::from_slash(s);
+            assert_eq!(p, Path::new(b));
+        }
     }
 }
