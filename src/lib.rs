@@ -37,7 +37,7 @@
 //!
 //!     // Convert to Cow<'_, Path>
 //!     let p = Cow::from_slash("foo/bar/piyo.txt");
-//!     assert_eq!(p, Cow::Owned(PathBuf::from(r"foo\bar\piyo.txt")));
+//!     assert_eq!(p, Cow::<Path>::Owned(PathBuf::from(r"foo\bar\piyo.txt")));
 //! }
 //!
 //! #[cfg(not(target_os = "windows"))]
