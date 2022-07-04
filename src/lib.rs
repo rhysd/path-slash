@@ -501,6 +501,3 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
         Cow::Borrowed(Path::new(s))
     }
 }
-
-#[cfg(test)]
-mod test;
