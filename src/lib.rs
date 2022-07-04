@@ -106,6 +106,8 @@ fn str_to_pathbuf<S: AsRef<str>>(s: S, sep: char) -> PathBuf {
         .map(|c| if c == sep { MAIN_SEPARATOR } else { c })
         .collect::<String>();
     PathBuf::from(s)
+    // Note: When MAIN_SEPARATOR_STR is stabilized, replace this implementation with the following:
+    // PathBuf::from(s.as_ref().replace(sep, MAIN_SEPARATOR_STR))
 }
 
 /// Trait to extend [`Path`].
@@ -328,7 +330,7 @@ impl PathBufExt for PathBuf {
     /// Any '\\' in the slash path is replaced with the file path separator.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        s.as_ref().to_string_lossy().replace('\\', "/").into()
+        str_to_pathbuf(&s.as_ref().to_string_lossy(), '\\')
     }
     #[cfg(target_os = "windows")]
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
