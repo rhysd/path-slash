@@ -173,7 +173,7 @@ fn utf16_encoded_os_str_pathbuf_from_slash() {
     for (s, b) in UTF16_TEST_FROM_SLASH {
         let o = OsString::from_wide(s);
         let p = PathBuf::from_slash_lossy(&o);
-        assert_eq!(p, Path::new(b));
+        assert_eq!(p, Path::new(b), "{:x?}", b);
     }
 }
 
@@ -182,7 +182,7 @@ fn utf16_encoded_os_str_cow_from_slash() {
     for (s, b) in UTF16_TEST_FROM_SLASH {
         let o = OsString::from_wide(s);
         let p = Cow::from_slash_lossy(&o);
-        assert_eq!(p, Path::new(b));
+        assert_eq!(p, Path::new(b), "{:x?}", b);
     }
 }
 
@@ -198,11 +198,20 @@ const INVALID_UTF16_TO_SLASH: &[(&[u16], &str)] = &[
 ];
 
 #[test]
-fn invalid_utf16_seq_to_slash() {
+fn invalid_utf16_seq_to_slash_lossy() {
     for (b, s) in INVALID_UTF16_TO_SLASH {
         let o = OsString::from_wide(b);
         let p = Path::new(&o);
-        assert_eq!(p.to_slash_lossy(), *s);
+        assert_eq!(p.to_slash_lossy(), *s, "{:x?}", b);
+    }
+}
+
+#[test]
+fn invalid_utf16_seq_to_slash() {
+    for (b, _) in INVALID_UTF16_TO_SLASH {
+        let o = OsString::from_wide(b);
+        let p = Path::new(&o);
+        assert_eq!(p.to_slash(), None, "{:x?}", b);
     }
 }
 
@@ -222,7 +231,7 @@ fn invalid_utf16_seq_pathbuf_from_slash() {
     for (b, s) in INVALID_UTF16_FROM_SLASH {
         let o = OsString::from_wide(b);
         let p = PathBuf::from_slash_lossy(&o);
-        assert_eq!(p.to_str().unwrap(), *s);
+        assert_eq!(p.to_str().unwrap(), *s, "{:x?}", b);
     }
 }
 
@@ -231,6 +240,6 @@ fn invalid_utf16_seq_cow_from_slash() {
     for (b, s) in INVALID_UTF16_FROM_SLASH {
         let o = OsString::from_wide(b);
         let p = Cow::from_slash_lossy(&o);
-        assert_eq!(p.to_str().unwrap(), *s);
+        assert_eq!(p.to_str().unwrap(), *s, "{:x?}", b);
     }
 }
