@@ -2,7 +2,7 @@
 
 use path_slash::{CowExt as _, PathBufExt as _, PathExt as _};
 use std::borrow::Cow;
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsString;
 use std::os::windows::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 
@@ -118,61 +118,119 @@ fn with_verbatim_unc_prefix_but_no_path_to_slash_lossy() {
     assert_eq!(slash, r"\\?\UNC\server\share");
 }
 
-const UTF16_TEST_CASES: &[(&[u16], &str)] = &[
+const UTF16_TEST_TO_SLASH: &[(&[u16], &str)] = &[
     (
         // あ\い\う\え\お
         &[
             0x3042, 0x005c, 0x3044, 0x005c, 0x3046, 0x005c, 0x3048, 0x005c, 0x304a,
         ],
-        // あ/い/う/え/お
-        "\x30\x42\x00\x2f\x30\x44\x00\x2f\x30\x46\x00\x2f\x30\x48\x00\x2f\x30\x4a",
+        "あ/い/う/え/お",
     ),
     (
         // あ\い\う\え\お\
         &[
             0x3042, 0x005c, 0x3044, 0x005c, 0x3046, 0x005c, 0x3048, 0x005c, 0x304a, 0x005c,
         ],
-        // あ/い/う/え/お/
-        "\x30\x42\x00\x2f\x30\x44\x00\x2f\x30\x46\x00\x2f\x30\x48\x00\x2f\x30\x4a\x00\x2f",
+        "あ/い/う/え/お/",
     ),
 ];
 
 #[test]
 fn utf16_encoded_os_str_to_slash() {
-    for (b, s) in UTF16_TEST_CASES {
+    for (b, s) in UTF16_TEST_TO_SLASH {
         let p = PathBuf::from(OsString::from_wide(b));
         assert_eq!(p.to_slash().unwrap(), *s);
     }
 }
 
 #[test]
-fn utf16_encoded_os_str_pathbuf_from_slash_lossy() {
-    for (b, s) in UTF16_TEST_CASES {
-        let p = PathBuf::from_slash_lossy(s);
-        assert_eq!(p, PathBuf::from(&OsString::from_wide(b)));
+fn utf16_encoded_os_str_to_slash_lossy() {
+    for (b, s) in UTF16_TEST_TO_SLASH {
+        let p = PathBuf::from(OsString::from_wide(b));
+        assert_eq!(p.to_slash_lossy(), *s);
     }
 }
+
+const UTF16_TEST_FROM_SLASH: &[(&[u16], &str)] = &[
+    (
+        // あ/い/う/え/お
+        &[
+            0x3042, 0x002f, 0x3044, 0x002f, 0x3046, 0x002f, 0x3048, 0x002f, 0x304a,
+        ],
+        r"あ\い\う\え\お",
+    ),
+    (
+        // あ/い/う/え/お/
+        &[
+            0x3042, 0x002f, 0x3044, 0x002f, 0x3046, 0x002f, 0x3048, 0x002f, 0x304a, 0x002f,
+        ],
+        r"あ\い\う\え\お\",
+    ),
+];
 
 #[test]
 fn utf16_encoded_os_str_pathbuf_from_slash() {
-    for (b, s) in UTF16_TEST_CASES {
-        let p = PathBuf::from_slash(s);
-        assert_eq!(p, PathBuf::from(&OsString::from_wide(b)));
-    }
-}
-
-#[test]
-fn utf16_encoded_os_str_cow_from_slash_lossy() {
-    for (b, s) in UTF16_TEST_CASES {
-        let p = Cow::from_slash_lossy(OsStr::new(s));
-        assert_eq!(p, PathBuf::from(OsString::from_wide(b)));
+    for (s, b) in UTF16_TEST_FROM_SLASH {
+        let o = OsString::from_wide(s);
+        let p = PathBuf::from_slash_lossy(&o);
+        assert_eq!(p, Path::new(b));
     }
 }
 
 #[test]
 fn utf16_encoded_os_str_cow_from_slash() {
-    for (b, s) in UTF16_TEST_CASES {
-        let p = Cow::from_slash(s);
-        assert_eq!(p, PathBuf::from(OsString::from_wide(b)));
+    for (s, b) in UTF16_TEST_FROM_SLASH {
+        let o = OsString::from_wide(s);
+        let p = Cow::from_slash_lossy(&o);
+        assert_eq!(p, Path::new(b));
+    }
+}
+
+const INVALID_UTF16_TO_SLASH: &[(&[u16], &str)] = &[
+    (
+        &[b'a' as u16, b'\\' as u16, 0xd800, b'b' as u16],
+        "a/\u{FFFD}b",
+    ),
+    (
+        &[b'a' as u16, b'\\' as u16, 0xd800, b'b' as u16, b'\\' as u16],
+        "a/\u{FFFD}b/",
+    ),
+];
+
+#[test]
+fn invalid_utf16_seq_to_slash() {
+    for (b, s) in INVALID_UTF16_TO_SLASH {
+        let o = OsString::from_wide(b);
+        let p = Path::new(&o);
+        assert_eq!(p.to_slash_lossy(), *s);
+    }
+}
+
+const INVALID_UTF16_FROM_SLASH: &[(&[u16], &str)] = &[
+    (
+        &[b'a' as u16, b'/' as u16, 0xd800, b'b' as u16],
+        "a\\\u{FFFD}b",
+    ),
+    (
+        &[b'a' as u16, b'/' as u16, 0xd800, b'b' as u16, b'/' as u16],
+        "a\\\u{FFFD}b\\",
+    ),
+];
+
+#[test]
+fn invalid_utf16_seq_pathbuf_from_slash() {
+    for (b, s) in INVALID_UTF16_FROM_SLASH {
+        let o = OsString::from_wide(b);
+        let p = PathBuf::from_slash_lossy(&o);
+        assert_eq!(p.to_str().unwrap(), *s);
+    }
+}
+
+#[test]
+fn invalid_utf16_seq_cow_from_slash() {
+    for (b, s) in INVALID_UTF16_FROM_SLASH {
+        let o = OsString::from_wide(b);
+        let p = Cow::from_slash_lossy(&o);
+        assert_eq!(p.to_str().unwrap(), *s);
     }
 }

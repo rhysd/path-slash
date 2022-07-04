@@ -18,7 +18,7 @@ jobs:
       - name: Install Rust toolchain
         run: |
           rustup set profile minimal
-          rustup update stable
+          rustup update stable --no-self-update
           rustup default stable
           rustup component add llvm-tools-preview
           rustup show
@@ -30,6 +30,7 @@ jobs:
         run: |
           cargo llvm-cov --color always --lcov --output-path lcov.info
           cargo llvm-cov --color always --no-run
+        shell: bash
       - uses: codecov/codecov-action@v3
         with:
           files: lcov.info
