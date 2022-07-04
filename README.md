@@ -43,8 +43,8 @@ fn example_path_ext() {
 
     // On Windows
     assert_eq!(
-        Path::new(r"foo\bar\piyo.txt").to_slash(),
-        Some("foo/bar/piyo.txt".to_string()),
+        Path::new(r"foo\bar\piyo.txt").to_slash().unwrap(),
+        "foo/bar/piyo.txt",
     );
 }
 
@@ -55,7 +55,7 @@ fn example_pathbuf_ext() {
     // On Windows
     let p = PathBuf::from_slash("foo/bar/piyo.txt");
     assert_eq!(p, PathBuf::from(r"foo\bar\piyo.txt"));
-    assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt".to_string());
+    assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
 }
 
 fn example_cow_ext() {
