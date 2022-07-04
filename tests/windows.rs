@@ -2,7 +2,8 @@
 
 use path_slash::{CowExt as _, PathBufExt as _, PathExt as _};
 use std::borrow::Cow;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
+use std::os::windows::ffi::OsStringExt;
 use std::path::{Path, PathBuf};
 
 #[test]
@@ -117,16 +118,20 @@ fn with_verbatim_unc_prefix_but_no_path_to_slash_lossy() {
     assert_eq!(slash, r"\\?\UNC\server\share");
 }
 
-const UTF16_TEST_CASES: &[(&str, &str)] = &[
+const UTF16_TEST_CASES: &[(&[u16], &str)] = &[
     (
         // あ\い\う\え\お
-        "\x30\x42\x00\x5c\x30\x44\x00\x5c\x30\x46\x00\x5c\x30\x48\x00\x5c\x30\x4a",
+        &[
+            0x3042, 0x005c, 0x3044, 0x005c, 0x3046, 0x005c, 0x3048, 0x005c, 0x304a,
+        ],
         // あ/い/う/え/お
         "\x30\x42\x00\x2f\x30\x44\x00\x2f\x30\x46\x00\x2f\x30\x48\x00\x2f\x30\x4a",
     ),
     (
         // あ\い\う\え\お\
-        "\x30\x42\x00\x5c\x30\x44\x00\x5c\x30\x46\x00\x5c\x30\x48\x00\x5c\x30\x4a\x00\x5c",
+        &[
+            0x3042, 0x005c, 0x3044, 0x005c, 0x3046, 0x005c, 0x3048, 0x005c, 0x304a, 0x005c,
+        ],
         // あ/い/う/え/お/
         "\x30\x42\x00\x2f\x30\x44\x00\x2f\x30\x46\x00\x2f\x30\x48\x00\x2f\x30\x4a\x00\x2f",
     ),
@@ -135,7 +140,7 @@ const UTF16_TEST_CASES: &[(&str, &str)] = &[
 #[test]
 fn utf16_encoded_os_str_to_slash() {
     for (b, s) in UTF16_TEST_CASES {
-        let p = Path::new(b);
+        let p = PathBuf::from(OsString::from_wide(b));
         assert_eq!(p.to_slash().unwrap(), *s);
     }
 }
@@ -144,7 +149,7 @@ fn utf16_encoded_os_str_to_slash() {
 fn utf16_encoded_os_str_pathbuf_from_slash_lossy() {
     for (b, s) in UTF16_TEST_CASES {
         let p = PathBuf::from_slash_lossy(s);
-        assert_eq!(p, Path::new(b));
+        assert_eq!(p, PathBuf::from(&OsString::from_wide(b)));
     }
 }
 
@@ -152,7 +157,7 @@ fn utf16_encoded_os_str_pathbuf_from_slash_lossy() {
 fn utf16_encoded_os_str_pathbuf_from_slash() {
     for (b, s) in UTF16_TEST_CASES {
         let p = PathBuf::from_slash(s);
-        assert_eq!(p, Path::new(b));
+        assert_eq!(p, PathBuf::from(&OsString::from_wide(b)));
     }
 }
 
@@ -160,7 +165,7 @@ fn utf16_encoded_os_str_pathbuf_from_slash() {
 fn utf16_encoded_os_str_cow_from_slash_lossy() {
     for (b, s) in UTF16_TEST_CASES {
         let p = Cow::from_slash_lossy(OsStr::new(s));
-        assert_eq!(p, Path::new(b));
+        assert_eq!(p, PathBuf::from(OsString::from_wide(b)));
     }
 }
 
@@ -168,6 +173,6 @@ fn utf16_encoded_os_str_cow_from_slash_lossy() {
 fn utf16_encoded_os_str_cow_from_slash() {
     for (b, s) in UTF16_TEST_CASES {
         let p = Cow::from_slash(s);
-        assert_eq!(p, Path::new(b));
+        assert_eq!(p, PathBuf::from(OsString::from_wide(b)));
     }
 }
