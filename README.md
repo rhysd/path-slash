@@ -31,10 +31,10 @@ and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
   - `PathBuf::to_slash(&self) -> Option<Cow<'_, Path>>`
   - `PathBuf::to_slash_lossy(&self) -> Cow<'_, Path>`
 - `CowExt`
-  - `fn from_slash(s: &str) -> Self`
-  - `fn from_slash_lossy(s: &OsStr) -> Self`
-  - `fn from_backslash(s: &str) -> Self`
-  - `fn from_backslash_lossy(s: &OsStr) -> Self`
+  - `Cow::<Path>::from_slash(s: &str) -> Self`
+  - `Cow::<Path>::from_slash_lossy(s: &OsStr) -> Self`
+  - `Cow::<Path>::from_backslash(s: &str) -> Self`
+  - `Cow::<Path>::from_backslash_lossy(s: &OsStr) -> Self`
 
 ```rust
 fn example_path_ext() {
