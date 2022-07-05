@@ -123,11 +123,27 @@ fn str_to_pathbuf<S: AsRef<str>>(s: S, sep: char) -> PathBuf {
 /// );
 /// ```
 pub trait PathExt {
+    /// Convert the file path into slash path as UTF-8 string. This method is similar to
+    /// [`Path::to_str`], but the path separator is fixed to '/'.
+    ///
+    /// Any file path separators in the file path are replaced with '/'. Only when the replacement
+    /// happens, heap allocation happens and `Cow::Owned` is returned.
+    /// When the path contains non-Unicode sequence, this method returns None.
+    ///
+    /// ```
+    /// # use std::path::Path;
+    /// # use std::borrow::Cow;
+    /// use path_slash::PathExt as _;
+    ///
+    /// #[cfg(target_os = "windows")]
+    /// let s = Path::new(r"foo\bar\piyo.txt");
+    ///
+    /// #[cfg(not(target_os = "windows"))]
+    /// let s = Path::new("foo/bar/piyo.txt");
+    ///
+    /// assert_eq!(s.to_slash(), Some(Cow::Borrowed("foo/bar/piyo.txt")));
+    /// ```
     fn to_slash(&self) -> Option<Cow<'_, str>>;
-    fn to_slash_lossy(&self) -> Cow<'_, str>;
-}
-
-impl PathExt for Path {
     /// Convert the file path into slash path as UTF-8 string. This method is similar to
     /// [`Path::to_string_lossy`], but the path separator is fixed to '/'.
     ///
@@ -146,6 +162,10 @@ impl PathExt for Path {
     ///
     /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt");
     /// ```
+    fn to_slash_lossy(&self) -> Cow<'_, str>;
+}
+
+impl PathExt for Path {
     #[cfg(not(target_os = "windows"))]
     fn to_slash_lossy(&self) -> Cow<'_, str> {
         self.to_string_lossy()
@@ -177,26 +197,6 @@ impl PathExt for Path {
         Cow::Owned(buf)
     }
 
-    /// Convert the file path into slash path as UTF-8 string. This method is similar to
-    /// [`Path::to_str`], but the path separator is fixed to '/'.
-    ///
-    /// Any file path separators in the file path are replaced with '/'. Only when the replacement
-    /// happens, heap allocation happens and `Cow::Owned` is returned.
-    /// When the path contains non-Unicode sequence, this method returns None.
-    ///
-    /// ```
-    /// # use std::path::Path;
-    /// # use std::borrow::Cow;
-    /// use path_slash::PathExt as _;
-    ///
-    /// #[cfg(target_os = "windows")]
-    /// let s = Path::new(r"foo\bar\piyo.txt");
-    ///
-    /// #[cfg(not(target_os = "windows"))]
-    /// let s = Path::new("foo/bar/piyo.txt");
-    ///
-    /// assert_eq!(s.to_slash(), Some(Cow::Borrowed("foo/bar/piyo.txt")));
-    /// ```
     #[cfg(not(target_os = "windows"))]
     fn to_slash(&self) -> Option<Cow<'_, str>> {
         self.to_str().map(Cow::Borrowed)
@@ -241,15 +241,6 @@ impl PathExt for Path {
 /// );
 /// ```
 pub trait PathBufExt {
-    fn from_slash<S: AsRef<str>>(s: S) -> Self;
-    fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
-    fn from_backslash<S: AsRef<str>>(s: S) -> Self;
-    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
-    fn to_slash(&self) -> Option<Cow<'_, str>>;
-    fn to_slash_lossy(&self) -> Cow<'_, str>;
-}
-
-impl PathBufExt for PathBuf {
     /// Convert the slash path (path separated with '/') to [`PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
@@ -270,15 +261,7 @@ impl PathBufExt for PathBuf {
     /// #[cfg(not(target_os = "windows"))]
     /// assert_eq!(p, PathBuf::from("foo/bar/piyo.txt"));
     /// ```
-    #[cfg(not(target_os = "windows"))]
-    fn from_slash<S: AsRef<str>>(s: S) -> Self {
-        PathBuf::from(s.as_ref())
-    }
-    #[cfg(target_os = "windows")]
-    fn from_slash<S: AsRef<str>>(s: S) -> Self {
-        str_to_pathbuf(s, '/')
-    }
-
+    fn from_slash<S: AsRef<str>>(s: S) -> Self;
     /// Convert the [`OsStr`] slash path (path separated with '/') to [`PathBuf`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
@@ -303,40 +286,16 @@ impl PathBufExt for PathBuf {
     /// #[cfg(not(target_os = "windows"))]
     /// assert_eq!(p, PathBuf::from("foo/bar/piyo.txt"));
     /// ```
-    #[cfg(not(target_os = "windows"))]
-    fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        PathBuf::from(s.as_ref())
-    }
-    #[cfg(target_os = "windows")]
-    fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        Self::from_slash(&s.as_ref().to_string_lossy())
-    }
-
+    fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
     /// Convert the backslash path (path separated with '\\') to [`PathBuf`].
     ///
     /// Any '\\' in the slash path is replaced with the file path separator.
     /// The replacements only happen on non-Windows.
-    #[cfg(not(target_os = "windows"))]
-    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
-        str_to_pathbuf(s, '\\')
-    }
-    #[cfg(target_os = "windows")]
-    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
-        PathBuf::from(s.as_ref())
-    }
-
+    fn from_backslash<S: AsRef<str>>(s: S) -> Self;
     /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`PathBuf`].
     ///
     /// Any '\\' in the slash path is replaced with the file path separator.
-    #[cfg(not(target_os = "windows"))]
-    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        str_to_pathbuf(&s.as_ref().to_string_lossy(), '\\')
-    }
-    #[cfg(target_os = "windows")]
-    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        PathBuf::from(s.as_ref())
-    }
-
+    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self;
     /// Convert the file path into slash path as UTF-8 string. This method is similar to
     /// [`Path::to_string_lossy`], but the path separator is fixed to '/'.
     ///
@@ -355,10 +314,7 @@ impl PathBufExt for PathBuf {
     ///
     /// assert_eq!(s.to_slash_lossy(), "foo/bar/piyo.txt");
     /// ```
-    fn to_slash_lossy(&self) -> Cow<'_, str> {
-        self.as_path().to_slash_lossy()
-    }
-
+    fn to_slash(&self) -> Option<Cow<'_, str>>;
     /// Convert the file path into slash path as UTF-8 string. This method is similar to
     /// [`Path::to_str`], but the path separator is fixed to '/'.
     ///
@@ -379,12 +335,56 @@ impl PathBufExt for PathBuf {
     ///
     /// assert_eq!(s.to_slash(), Some(Cow::Borrowed("foo/bar/piyo.txt")));
     /// ```
+    fn to_slash_lossy(&self) -> Cow<'_, str>;
+}
+
+impl PathBufExt for PathBuf {
+    #[cfg(not(target_os = "windows"))]
+    fn from_slash<S: AsRef<str>>(s: S) -> Self {
+        PathBuf::from(s.as_ref())
+    }
+    #[cfg(target_os = "windows")]
+    fn from_slash<S: AsRef<str>>(s: S) -> Self {
+        str_to_pathbuf(s, '/')
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
+        PathBuf::from(s.as_ref())
+    }
+    #[cfg(target_os = "windows")]
+    fn from_slash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
+        Self::from_slash(&s.as_ref().to_string_lossy())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
+        str_to_pathbuf(s, '\\')
+    }
+    #[cfg(target_os = "windows")]
+    fn from_backslash<S: AsRef<str>>(s: S) -> Self {
+        PathBuf::from(s.as_ref())
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
+        str_to_pathbuf(&s.as_ref().to_string_lossy(), '\\')
+    }
+    #[cfg(target_os = "windows")]
+    fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
+        PathBuf::from(s.as_ref())
+    }
+
+    fn to_slash_lossy(&self) -> Cow<'_, str> {
+        self.as_path().to_slash_lossy()
+    }
+
     fn to_slash(&self) -> Option<Cow<'_, str>> {
         self.as_path().to_slash()
     }
 }
 
-/// Trait to extend [`std::borrow::Cow`].
+/// Trait to extend [`Cow`].
 ///
 /// ```
 /// # use std::path::Path;
@@ -397,13 +397,6 @@ impl PathBufExt for PathBuf {
 /// );
 /// ```
 pub trait CowExt<'a> {
-    fn from_slash(s: &'a str) -> Self;
-    fn from_slash_lossy(s: &'a OsStr) -> Self;
-    fn from_backslash(s: &'a str) -> Self;
-    fn from_backslash_lossy(s: &'a OsStr) -> Self;
-}
-
-impl<'a> CowExt<'a> for Cow<'a, Path> {
     /// Convert the slash path (path separated with '/') to [`Cow`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
@@ -427,15 +420,7 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     ///     Path::new(r"foo\\bar\\piyo.txt"),
     /// );
     /// ```
-    #[cfg(not(target_os = "windows"))]
-    fn from_slash(s: &'a str) -> Self {
-        Cow::Borrowed(Path::new(s))
-    }
-    #[cfg(target_os = "windows")]
-    fn from_slash(s: &'a str) -> Self {
-        str_to_path(s, '/')
-    }
-
+    fn from_slash(s: &'a str) -> Self;
     /// Convert the [`OsStr`] slash path (path separated with '/') to [`Cow`].
     ///
     /// Any '/' in the slash path is replaced with the file path separator.
@@ -444,18 +429,7 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     ///
     /// On Windows, any non-Unicode sequences are replaced with U+FFFD while the conversion.
     /// On non-Windows OS, there is no loss while conversion.
-    #[cfg(not(target_os = "windows"))]
-    fn from_slash_lossy(s: &'a OsStr) -> Self {
-        Cow::Borrowed(Path::new(s))
-    }
-    #[cfg(target_os = "windows")]
-    fn from_slash_lossy(s: &'a OsStr) -> Self {
-        match s.to_string_lossy() {
-            Cow::Borrowed(s) => str_to_path(s, '/'),
-            Cow::Owned(s) => Cow::Owned(str_to_pathbuf(&s, '/')),
-        }
-    }
-
+    fn from_slash_lossy(s: &'a OsStr) -> Self;
     /// Convert the backslash path (path separated with '\\') to [`Cow`].
     ///
     /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
@@ -478,6 +452,36 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
     ///     Path::new(r"foo\\bar\\piyo.txt"),
     /// );
     /// ```
+    fn from_backslash(s: &'a str) -> Self;
+    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`Cow`].
+    ///
+    /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
+    /// only happen on non-Windows.
+    fn from_backslash_lossy(s: &'a OsStr) -> Self;
+}
+
+impl<'a> CowExt<'a> for Cow<'a, Path> {
+    #[cfg(not(target_os = "windows"))]
+    fn from_slash(s: &'a str) -> Self {
+        Cow::Borrowed(Path::new(s))
+    }
+    #[cfg(target_os = "windows")]
+    fn from_slash(s: &'a str) -> Self {
+        str_to_path(s, '/')
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    fn from_slash_lossy(s: &'a OsStr) -> Self {
+        Cow::Borrowed(Path::new(s))
+    }
+    #[cfg(target_os = "windows")]
+    fn from_slash_lossy(s: &'a OsStr) -> Self {
+        match s.to_string_lossy() {
+            Cow::Borrowed(s) => str_to_path(s, '/'),
+            Cow::Owned(s) => Cow::Owned(str_to_pathbuf(&s, '/')),
+        }
+    }
+
     #[cfg(not(target_os = "windows"))]
     fn from_backslash(s: &'a str) -> Self {
         str_to_path(s, '\\')
@@ -487,10 +491,6 @@ impl<'a> CowExt<'a> for Cow<'a, Path> {
         Cow::Borrowed(Path::new(s))
     }
 
-    /// Convert the [`OsStr`] backslash path (path separated with '\\') to [`Cow`].
-    ///
-    /// Any '\\' in the slash path is replaced with the file path separator. Heap allocation may
-    /// only happen on non-Windows.
     #[cfg(not(target_os = "windows"))]
     fn from_backslash_lossy(s: &'a OsStr) -> Self {
         match s.to_string_lossy() {
