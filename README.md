@@ -12,6 +12,8 @@ On Unix-like OS, path separator is slash `/` by default. One may want to convert
 Windows, file path separator `\` needs to be replaced with slash `/` (and of course `\`s for escaping
 characters should not be replaced).
 
+Supported Rust version is 1.38.0 or later.
+
 This package was inspired by Go's [`path/filepath.FromSlash`](https://golang.org/pkg/path/filepath/#FromSlash)
 and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
 

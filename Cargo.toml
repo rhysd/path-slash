@@ -8,6 +8,7 @@ repository = "https://github.com/rhysd/path-slash"
 readme = "README.md"
 license = "MIT"
 categories = ["filesystem"]
+rust-version = "1.38"
 
 [badges]
 maintenance = { status = "passively-maintained" }
