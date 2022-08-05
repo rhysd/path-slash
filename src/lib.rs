@@ -8,6 +8,8 @@
 //!
 //! For example, a file path `foo\bar\piyo.txt` can be converted to/from a slash path `foo/bar/piyo.txt`.
 //!
+//! Supported Rust version is 1.38.0 or later.
+//!
 //! This package was inspired by Go's [`path/filepath.FromSlash`](https://golang.org/pkg/path/filepath/#FromSlash)
 //! and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
 //!
