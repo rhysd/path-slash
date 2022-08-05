@@ -35,6 +35,26 @@ jobs:
         with:
           files: lcov.info
 
+  msrv:
+    name: MSRV (Rust 1.38)
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        run: |
+          rustup set profile minimal
+          rustup toolchain install 1.38.0
+          rustup default 1.38.0
+          rustup show
+          cargo --version
+      - uses: Swatinem/rust-cache@v1
+      - name: Run tests
+        run: cargo test --color always
+
   linter:
     name: clippy and rustfmt
     runs-on: ubuntu-latest
