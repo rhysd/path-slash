@@ -43,11 +43,14 @@ fn example_path_ext() {
     // Trait for extending std::path::Path
     use path_slash::PathExt as _;
 
+    let p = Path::from_slash("foo/bar/piyo.txt");
+
     // On Windows
-    assert_eq!(
-        Path::new(r"foo\bar\piyo.txt").to_slash().unwrap(),
-        "foo/bar/piyo.txt",
-    );
+    assert_eq!(p, Path::new(r"foo\bar\piyo.txt"));
+
+    // Convert to slash path
+    assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
+    assert_eq!(p.to_slash_lossy(), "foo/bar/piyo.txt");
 }
 
 fn example_pathbuf_ext() {
@@ -57,7 +60,10 @@ fn example_pathbuf_ext() {
     // On Windows
     let p = PathBuf::from_slash("foo/bar/piyo.txt");
     assert_eq!(p, PathBuf::from(r"foo\bar\piyo.txt"));
+
+    // Convert to slash path
     assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
+    assert_eq!(p.to_slash_lossy(), "foo/bar/piyo.txt");
 }
 
 fn example_cow_ext() {
@@ -69,6 +75,10 @@ fn example_cow_ext() {
     assert_eq!(p, Cow::Owned(PathBuf::from(r"foo\bar\piyo.txt")));
     // On non-Windows
     assert_eq!(p, Cow::Borrowed(Path::new("foo/bar/piyo.txt")));
+
+    // Convert to slash path
+    assert_eq!(p.to_slash().unwrap(), "foo/bar/piyo.txt");
+    assert_eq!(p.to_slash_lossy(), "foo/bar/piyo.txt");
 }
 ```
 
