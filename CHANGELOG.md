@@ -1,7 +1,17 @@
+<a name="v0.2.1"></a>
+# [v0.2.1](https://github.com/rhysd/path-slash/releases/tag/v0.2.1) - 06 Aug 2022
+
+- Added [`CowExt::to_slash`](https://docs.rs/path-slash/latest/path_slash/trait.CowExt.html#tymethod.to_slash) and [`Cow::to_slash_lossy`](https://docs.rs/path-slash/latest/path_slash/trait.CowExt.html#tymethod.to_slash_lossy). `PathExt` is no longer necessary to convert `Cow<'a, Path>` paths into slash paths.
+- Clarified minimum supported Rust version. Rust 1.38 or later is supported. `rust-version` field in `Cargo.toml` was added so that `cargo` can check the MSRV is met.
+- Improved documents of trait methods. The documents were moved from implementations of the trait methods to definitions of them so that users can find out the documents more easily. Documents for implementations are folded by default, but definitions aren't.
+
+[Changes][v0.2.1]
+
+
 <a name="v0.2.0"></a>
 # [v0.2.0](https://github.com/rhysd/path-slash/releases/tag/v0.2.0) - 05 Jul 2022
 
-- **BREAKING:** `to_slash` and `to_slash_lossy` return `Cow<'_, str>` instead of `String`. Now heap allocation hapnens only when path separator is replaced. On Unix-like OS, almost all heap allocations can be removed by this change. Migrating from 0.1 to 0.2 is easy by adding `Cow::into_owned` call. (#9)
+- **BREAKING:** `to_slash` and `to_slash_lossy` return `Cow<'_, str>` instead of `String`. Now heap allocation hapnens only when path separator is replaced. On Unix-like OS, almost all heap allocations can be removed by this change. Migrating from 0.1 to 0.2 is quite easy by adding `Cow::into_owned` call. If `&str` is sufficient for your use case, `Cow::as_ref` is better to avoid heap allocation. ([#9](https://github.com/rhysd/path-slash/issues/9))
   ```rust
   use path_slash::PathExt as _;
 
@@ -19,21 +29,21 @@
   - 0.2.0
     - `Path::to_slash(&self) -> Option<Cow<'_, Path>>`
     - `Path::to_slash_lossy(&self) -> Cow<'_, Path>`
-- **BREAKING:** Fix inconsistency on Windows and on Unix-like OS in terms of trailing slash in path. Now a trailing slash in path is always preserved. (#10)
+- **BREAKING:** Fix inconsistency on Windows and on Unix-like OS in terms of trailing slash in path. Now a trailing slash in path is always preserved. ([#10](https://github.com/rhysd/path-slash/issues/10))
   ```rust
   // 0.1
   #[cfg(target_os = "windows")]
   assert_eq!(Path::new(r"\a\b\").to_slash_lossy(), "/a/b"); // Trailing slash is removed
   #[cfg(not(target_os = "windows"))]
-  assert_eq!(Path::new(r"\a\b\").to_slash_lossy(), "/a/b/"); // Trailing slash is preserved
+  assert_eq!(Path::new("/a/b/").to_slash_lossy(), "/a/b/"); // Trailing slash is preserved
 
   // 0.2
   #[cfg(target_os = "windows")]
   assert_eq!(Path::new(r"\a\b\").to_slash_lossy(), "/a/b/"); // Trailing slash is preserved
   #[cfg(not(target_os = "windows"))]
-  assert_eq!(Path::new(r"\a\b\").to_slash_lossy(), "/a/b/"); // Trailing slash is preserved
+  assert_eq!(Path::new("/a/b/").to_slash_lossy(), "/a/b/"); // Trailing slash is preserved
   ```
-- New API `path_slash::CowExt` is added to extend `Cow<'_, Path>`. Methods to convert slash paths to `Cow<'_, Path>` are available. It is useful to avoid heap allocation as much as possible comparing with `PathBufExt`.  See [the API document](https://docs.rs/path-slash/latest/path_slash/trait.CowExt.html) for more details. (#9)
+- New API `path_slash::CowExt` is added to extend `Cow<'_, Path>`. Its methods convert slash paths into `Cow<'_, Path>`. It is useful to avoid heap allocations as much as possible compared with `PathBufExt`.  See [the API document](https://docs.rs/path-slash/latest/path_slash/trait.CowExt.html) for more details. ([#9](https://github.com/rhysd/path-slash/issues/9))
   ```rust
   use path_slash::CowExt as _;
   let p = Cow::from_slash("foo/bar/piyo.txt"); // Heap allocation only happens on Windows
@@ -58,9 +68,9 @@
 <a name="v0.1.5"></a>
 # [v0.1.5](https://github.com/rhysd/path-slash/releases/tag/v0.1.5) - 29 Jun 2022
 
-- Add new APIs to convert backslash paths to `PathBuf`. (#8, thanks @picobyte)
+- Add new APIs to convert backslash paths to `PathBuf`. ([#8](https://github.com/rhysd/path-slash/issues/8), thanks [@picobyte](https://github.com/picobyte))
   - `PathBuf::from_backslash` converts `&str` into `PathBuf` with replacing `\` on non-Windows OS
-  - `PathBuf::from_backslash` converts `&OsStr` into `PathBuf` with replacing `\` on non-Windows OS
+  - `PathBuf::from_backslash_lossy` converts `&OsStr` into `PathBuf` with replacing `\` on non-Windows OS
 
 [Changes][v0.1.5]
 
@@ -68,7 +78,7 @@
 <a name="v0.1.4"></a>
 # [v0.1.4](https://github.com/rhysd/path-slash/releases/tag/v0.1.4) - 15 Jan 2021
 
-- Fix a final letter of paths with some verbatim prefixes was removed (#5)
+- Fix a final letter of paths with some verbatim prefixes was removed ([#5](https://github.com/rhysd/path-slash/issues/5))
 
 [Changes][v0.1.4]
 
@@ -76,7 +86,7 @@
 <a name="v0.1.3"></a>
 # [v0.1.3](https://github.com/rhysd/path-slash/releases/tag/v0.1.3) - 01 Jul 2020
 
-- Fix documentation (#4)
+- Fix documentation ([#4](https://github.com/rhysd/path-slash/issues/4))
 
 [Changes][v0.1.3]
 
@@ -84,12 +94,13 @@
 <a name="v0.1.2"></a>
 # [0.1.2 (v0.1.2)](https://github.com/rhysd/path-slash/releases/tag/v0.1.2) - 16 Jun 2020
 
-- **Fix:** Root path separator was doubled when the path contains Windows driver letter. For example, when `C:/foo` was given, `to_slash` converted it to `C:\\foo`. In this version it converts it to `C:\foo` correctly.
-- **Improve:** Remove a redundant allocation at calling `to_slash()` method.
+- Fix: Root path separator was doubled when the path contains Windows driver letter. For example, when `C:/foo` was given, `to_slash` converted it to `C:\\foo`. In this version it converts it to `C:\foo` correctly.
+- Improve: Remove a redundant allocation at calling `to_slash()` method.
 
 [Changes][v0.1.2]
 
 
+[v0.2.1]: https://github.com/rhysd/path-slash/compare/v0.2.0...v0.2.1
 [v0.2.0]: https://github.com/rhysd/path-slash/compare/v0.1.5...v0.2.0
 [v0.1.5]: https://github.com/rhysd/path-slash/compare/v0.1.4...v0.1.5
 [v0.1.4]: https://github.com/rhysd/path-slash/compare/v0.1.3...v0.1.4
