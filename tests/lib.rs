@@ -167,6 +167,16 @@ fn to_slash_pathbuf() {
 }
 
 #[test]
+fn to_slash_cow() {
+    for (input, expected) in TO_SLASH_TESTS.iter() {
+        assert_eq!(
+            Cow::Borrowed(input.as_path()).to_slash(),
+            Some(Cow::Borrowed(expected.as_str()))
+        );
+    }
+}
+
+#[test]
 fn to_slash_lossy_path() {
     for (input, expected) in TO_SLASH_TESTS.iter() {
         assert_eq!(&input.as_path().to_slash_lossy(), expected);
@@ -177,6 +187,13 @@ fn to_slash_lossy_path() {
 fn to_slash_lossy_pathbuf() {
     for (input, expected) in TO_SLASH_TESTS.iter() {
         assert_eq!(&input.to_slash_lossy(), expected);
+    }
+}
+
+#[test]
+fn to_slash_lossy_cow() {
+    for (input, expected) in TO_SLASH_TESTS.iter() {
+        assert_eq!(&Cow::Borrowed(input.as_path()).to_slash_lossy(), expected);
     }
 }
 
