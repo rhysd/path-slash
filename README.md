@@ -14,8 +14,8 @@ characters should not be replaced).
 
 Supported Rust version is 1.38.0 or later.
 
-This package was inspired by Go's [`path/filepath.FromSlash`](https://golang.org/pkg/path/filepath/#FromSlash)
-and [`path/filepath.ToSlash`](https://golang.org/pkg/path/filepath/#ToSlash).
+This package was inspired by Go's [`path/filepath.FromSlash`](https://pkg.go.dev/path/filepath#FromSlash)
+and [`path/filepath.ToSlash`](https://pkg.go.dev/path/filepath#ToSlash).
 
 ## Usage
 
