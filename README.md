@@ -23,20 +23,22 @@ and [`path/filepath.ToSlash`](https://pkg.go.dev/path/filepath#ToSlash).
 `std::path::Path`, `std::path::PathBuf` and `std::borrow::Cow<'_, Path>` gain some methods and associated functions.
 
 - `PathExt`
-  - `Path::to_slash(&self) -> Option<Cow<'_, Path>>`
-  - `Path::to_slash_lossy(&self) -> Cow<'_, Path>`
+  - `Path::to_slash(&self) -> Option<Cow<'_, str>>`
+  - `Path::to_slash_lossy(&self) -> Cow<'_, str>`
 - `PathBufExt`
   - `PathBuf::from_slash<S: AsRef<str>>(s: S) -> PathBuf`
   - `PathBuf::from_slash_lossy<S: AsRef<OsStr>>(s: S) -> PathBuf`
   - `PathBuf::from_backslash<S: AsRef<str>>(s: S) -> PathBuf`
   - `PathBuf::from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> PathBuf`
-  - `PathBuf::to_slash(&self) -> Option<Cow<'_, Path>>`
-  - `PathBuf::to_slash_lossy(&self) -> Cow<'_, Path>`
+  - `PathBuf::to_slash(&self) -> Option<Cow<'_, str>>`
+  - `PathBuf::to_slash_lossy(&self) -> Cow<'_, str>`
 - `CowExt`
-  - `Cow::<Path>::from_slash(s: &str) -> Self`
-  - `Cow::<Path>::from_slash_lossy(s: &OsStr) -> Self`
-  - `Cow::<Path>::from_backslash(s: &str) -> Self`
-  - `Cow::<Path>::from_backslash_lossy(s: &OsStr) -> Self`
+  - `Cow::<Path>::from_slash(s: &str) -> Cow<'_, Path>`
+  - `Cow::<Path>::from_slash_lossy(s: &OsStr) -> Cow<'_, Path>`
+  - `Cow::<Path>::from_backslash(s: &str) -> Cow<'_, Path>`
+  - `Cow::<Path>::from_backslash_lossy(s: &OsStr) -> Cow<'_, Path>`
+  - `Cow::<Path>::to_slash(&self) -> Option<Cow<'_, str>>`
+  - `Cow::<Path>::to_slash_lossy(&self) -> Cow<'_, str>`
 
 ```rust
 fn example_path_ext() {
