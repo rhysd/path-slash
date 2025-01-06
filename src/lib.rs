@@ -372,7 +372,7 @@ impl PathBufExt for PathBuf {
 
     #[cfg(not(target_os = "windows"))]
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
-        str_to_pathbuf(&s.as_ref().to_string_lossy(), '\\')
+        str_to_pathbuf(s.as_ref().to_string_lossy(), '\\')
     }
     #[cfg(target_os = "windows")]
     fn from_backslash_lossy<S: AsRef<OsStr>>(s: S) -> Self {
