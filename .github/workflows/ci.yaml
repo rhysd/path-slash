@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Rust toolchain
         run: |
           rustup set profile minimal
@@ -23,7 +23,7 @@ jobs:
           rustup component add llvm-tools-preview
           rustup show
           cargo --version
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Run tests with measuring coverage
@@ -31,7 +31,7 @@ jobs:
           cargo llvm-cov --color always --lcov --output-path lcov.info
           cargo llvm-cov --color always --no-run
         shell: bash
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           files: lcov.info
 
@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install Rust toolchain
         run: |
           rustup set profile minimal
@@ -51,7 +51,7 @@ jobs:
           rustup default 1.38.0
           rustup show
           cargo --version
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test --color always
 
@@ -59,7 +59,7 @@ jobs:
     name: clippy and rustfmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install tools
         run: |
           rustup set profile minimal
@@ -70,6 +70,6 @@ jobs:
           cargo --version
           cargo fmt --version
           cargo clippy --version
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt -- --color always --check
       - run: cargo clippy --color always --all -- -D warnings
