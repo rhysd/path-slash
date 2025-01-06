@@ -103,7 +103,7 @@ path-slash = "0.x"
 [doc]: https://docs.rs/path-slash
 [crates-io-badge]: https://img.shields.io/crates/v/path-slash.svg
 [crates-io]: https://crates.io/crates/path-slash
-[ci]: https://github.com/rhysd/path-slash/actions?query=workflow%3ACI
-[ci-badge]: https://github.com/rhysd/path-slash/workflows/CI/badge.svg?branch=master&event=push
+[ci]: https://github.com/rhysd/path-slash/actions/workflows/ci.yaml
+[ci-badge]: https://github.com/rhysd/path-slash/actions/workflows/ci.yaml/badge.svg
 [codecov-badge]: https://codecov.io/gh/rhysd/path-slash/branch/master/graph/badge.svg?token=6f7QWopfz4
 [codecov]: https://codecov.io/gh/rhysd/path-slash
