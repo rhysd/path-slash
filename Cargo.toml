@@ -20,4 +20,4 @@ dev-version = false
 [dependencies]
 
 [dev-dependencies]
-lazy_static = "1"
+lazy_static = "=1.4"
