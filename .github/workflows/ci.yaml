@@ -15,14 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        run: |
-          rustup set profile minimal
-          rustup update stable --no-self-update
-          rustup default stable
-          rustup component add llvm-tools-preview
-          rustup show
-          cargo --version
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
       - uses: Swatinem/rust-cache@v2
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -44,13 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        run: |
-          rustup set profile minimal
-          rustup toolchain install 1.38.0
-          rustup default 1.38.0
-          rustup show
-          cargo --version
+      - uses: dtolnay/rust-toolchain@1.38
       - uses: Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test --color always
@@ -60,16 +49,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install tools
-        run: |
-          rustup set profile minimal
-          rustup update stable
-          rustup default stable
-          rustup component add rustfmt clippy
-          rustup show
-          cargo --version
-          cargo fmt --version
-          cargo clippy --version
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt -- --color always --check
       - run: cargo clippy --color always --all -- -D warnings
